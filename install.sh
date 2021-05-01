@@ -1,8 +1,7 @@
 #!/bin/bash
-set -u
 
 abort() {
-	printf "%s\n" "$@"
+	printf "\n%s\n\n" "$@"
 	exit 1
 }
 
@@ -12,25 +11,39 @@ fi
 
 # Primeiro verifica o sistema operacional.
 OS="$(uname)"
-if [[ "$OS" == "Linux" ]]; then
-	RUNNING_LINUX=1
-elif [[ "$OS" != "Darwin" ]]; then
+if [[ "$OS" != "Darwin" && "$OS" != "Linux" ]]; then
 	abort "Este script apenas suporta macOS e Linux."
 fi
 
+# String formatters
+LIGHTBLUE='\e[94m'
+PURPLE='\e[0;35m'
+GREEN='\e[32m'
+NOCOLOR='\e[0m'
+TTYBOLD="\033[1;39m"
+TTYRESET="\033[1;0m"
+
 # Realiza o curl para obter código.
-BETTERCCPP="$(curl -fsSL https://raw.githubusercontent.com/henriquefalconer/better-c-cpp-compilation-tools/main/install.sh)"
+save() {
+	printf "\n1/2 ⬇️  Baixando novos comandos de C/C++..."
+	curl -fsSL https://raw.githubusercontent.com/henriquefalconer/better-c-cpp-compilation-tools/main/better_c_cpp.sh >> $1
+	printf " Feito!\n\n"
+	printf "2/2 📀 Salvando-os em ${LIGHTBLUE}$1${NOCOLOR}..."
+	source $1
+	printf " Salvo!\n\n"
+}
 
 # Seleciona o path de instalação.
 if [[ "$SHELL" == "/bin/zsh" ]]; then
-	# On ARM macOS, this script installs to /opt/homebrew only
-	BETTERCCPP >> ~/.zshenv
-	source ~/.zshenv
+	save ~/.zshenv
 else
-	# On Intel macOS, this script installs to /usr/local only
-	BETTERCCPP >> ~/.bashrc
-	source ~/.bashrc
+	save ~/.bashrc
 fi
 
-# Diz oi:
-chelp new
+# Aguarda input do usuário para mostrar novos comandos.
+printf "🎉 Configuração feita! aperte ${TTYBOLD}ENTER${TTYRESET} para visualizar os novos comandos.\n"
+read
+
+# Mostra novos comandos.
+chelp
+printf "Para visualizar este menu novamente, é só digitar ${LIGHTBLUE}chelp${NOCOLOR} 😉\n\n"

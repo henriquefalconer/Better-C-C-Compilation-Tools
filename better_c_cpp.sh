@@ -39,11 +39,7 @@ chelp() {
 	LIGHTGREY='\e[37m'
 	NOCOLOR='\e[0m'
 	LINEBREAK='\n\t\t\t\t⮑  '
-	if [ "$1" = "new" ]; then
-		printf '\n🎉 Foram criados os seguintes comandos!\n'
-	else
-		printf '\nComandos para rodar programas em C/C++! 💻\n'
-	fi
+	printf '\nComandos para rodar programas em C/C++! 💻\n'
 	INSTRUCTIONS="
 ${GREEN}cnew ${LIGHTBLUE}[nome do arquivo]${NOCOLOR}\t\tgera um novo arquivo C na pasta atual, com um template inicial.
 
@@ -58,7 +54,6 @@ ${GREEN}out${NOCOLOR}\t\t\t\troda o último código em C/C++ compilado com ${LIG
 ${GREEN}hidevscc${NOCOLOR}\t\t\tcaso esteja usando VS Code, este comando torna invisíveis os${LINEBREAK}arquivos de compilação para não poluir a área de trabalho.
 "
 	printf "\n${INSTRUCTIONS}\n\n"
-	[ "$1" = "new" ] && printf "Para visualizar este menu novamente, é só digitar ${LIGHTBLUE}chelp${NOCOLOR} 😉\n\n"
 	printf "Feito por ${LIGHTBLUE}@henriquefalconer${NOCOLOR} (https://github.com/henriquefalconer)\n\n"
 }
 

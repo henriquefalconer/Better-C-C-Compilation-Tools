@@ -23,12 +23,18 @@ NOCOLOR='\e[0m'
 TTYBOLD="\033[1;39m"
 TTYRESET="\033[1;0m"
 
+# Realiza o curl para obter os templates.
+printf "1/3 📄 Baixando templates de C/C++..."
+curl -fsSL https://raw.githubusercontent.com/henriquefalconer/better-c-cpp-tools/main/templates/template.c >>~/.template.c
+curl -fsSL https://raw.githubusercontent.com/henriquefalconer/better-c-cpp-tools/main/templates/template.cpp >>~/.template.cpp
+printf " Feito!\n\n"
+
 # Realiza o curl para obter código.
 savefuncs() {
-    printf "1/3 ⬇️  Baixando novos comandos de C/C++..."
+    printf "2/3 ⬇️  Baixando novos comandos de C/C++..."
     curl -fsSL https://raw.githubusercontent.com/henriquefalconer/better-c-cpp-tools/main/funcs.sh >>$1
     printf " Feito!\n\n"
-    printf "2/3 📀 Salvando-os em ${LIGHTBLUE}$1${NOCOLOR}..."
+    printf "3/3 📀 Salvando-os em ${LIGHTBLUE}$1${NOCOLOR}..."
     source $1
     printf " Salvo!\n\n"
 }
@@ -39,12 +45,6 @@ if [[ "$SHELL" == "/bin/zsh" ]]; then
 else
     savefuncs ~/.bashrc
 fi
-
-# Realiza o curl para obter os templates.
-printf "3/3 📄 Baixando templates de C/C++..."
-curl -fsSL https://raw.githubusercontent.com/henriquefalconer/better-c-cpp-tools/main/templates/template.c >>~/.template.c
-curl -fsSL https://raw.githubusercontent.com/henriquefalconer/better-c-cpp-tools/main/templates/template.cpp >>~/.template.cpp
-printf " Feito!\n\n"
 
 # Verifica se os comandos foram carregados com o "source".
 if ! command -v chelp &>/dev/null; then

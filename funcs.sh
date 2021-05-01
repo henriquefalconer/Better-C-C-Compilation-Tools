@@ -63,16 +63,25 @@ hidevscc() {
 }
 
 printcommand() {
+    # Nome do comando e seus argumentos.
     NAME="${GREEN}$1 ${LIGHTBLUE}$2${NOCOLOR}"
+    # Indentação das descrições. 
     TABSNO=4
     TABS=$(printf '\t%.0s' {1..${TABSNO}})
     REALNAMESIZE=$(($#1 + $#2 + 1))
     FIRSTLINETABSNO=$(( $TABSNO - $REALNAMESIZE / 8 ))
     FIRSTLINETABS=$(printf '\t%.0s' {1..${FIRSTLINETABSNO}})
+    # Quantidade de caracteres por linha que o fmt deveria imprimir.
     AVAILABLECOL=$((COLUMNS - ${#LINEBREAK}))
+    # Formatação da descrição de modo a não ter quebras de linha em palavras.
     DESC=$(printf "${TABS}$3\n" | fmt -w ${AVAILABLECOL})
+    # Remoção da indentação da primeira linha da descrição e
+    # prepararação para a junção com o nome e seus argumentos.
     DESC=${DESC:$TABSNO}
+    # Inserção do caractere de quebra de linha em todas as linhas
+    # menos a primeira.
     DESC=$(echo ${DESC} | sed "s/${TABS}/${TABS}${LINEBREAK}/g")
+    # Junção com o nome e seus argumentos.
     printf "${NAME}${FIRSTLINETABS}${DESC}\n\n"
 }
 

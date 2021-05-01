@@ -1,3 +1,4 @@
+
 # ------ Start of Better C/C++ Compilation Tools ------
 
 echoeval() {

@@ -2,7 +2,7 @@
 
 Versão 1.0
 
-## Funcionalidades
+## Funcionalidades atuais
 
 - Criar novos arquivos C/C++ com templates iniciais
 - Compilar e executar códigos em C/C++, sem precisar lembrar de comandos gigantes do `gcc` ou `g++`

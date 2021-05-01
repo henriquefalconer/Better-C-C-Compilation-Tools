@@ -24,21 +24,27 @@ TTYBOLD="\033[1;39m"
 TTYRESET="\033[1;0m"
 
 # Realiza o curl para obter código.
-save() {
-    printf "\n1/2 ⬇️  Baixando novos comandos de C/C++..."
+savefuncs() {
+    printf "\n1/3 ⬇️  Baixando novos comandos de C/C++..."
     curl -fsSL https://raw.githubusercontent.com/henriquefalconer/better-c-cpp-compilation-tools/main/funcs.sh >>$1
     printf " Feito!\n\n"
-    printf "2/2 📀 Salvando-os em ${LIGHTBLUE}$1${NOCOLOR}..."
+    printf "2/3 📀 Salvando-os em ${LIGHTBLUE}$1${NOCOLOR}..."
     source $1
     printf " Salvo!\n\n"
 }
 
 # Seleciona o path de instalação.
 if [[ "$SHELL" == "/bin/zsh" ]]; then
-    save ~/.zshenv
+    savefuncs ~/.zshenv
 else
-    save ~/.bashrc
+    savefuncs ~/.bashrc
 fi
+
+# Realiza o curl para obter os templates.
+printf "3/3 📄 Baixando templates de C/C++..."
+curl -fsSL https://raw.githubusercontent.com/henriquefalconer/better-c-cpp-compilation-tools/main/templates/template.c >>~/.template.c
+curl -fsSL https://raw.githubusercontent.com/henriquefalconer/better-c-cpp-compilation-tools/main/templates/template.cpp >>~/.template.cpp
+printf " Feito!\n\n"
 
 # Verifica se os comandos foram carregados com o "source".
 if ! command -v chelp &>/dev/null; then

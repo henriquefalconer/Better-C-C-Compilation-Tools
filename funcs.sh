@@ -30,19 +30,11 @@ crun() {
 }
 
 cnew() {
-    cat >$1.c <<-END
-		#include <stdio.h>
+    cp ~/.template.c $1.c
+}
 
-		int onePlusOne() { return 1 + 1; }
-
-		int main() {
-		    int two = onePlusOne();
-
-		    printf("1 + 1 = %%d\n", two);
-
-		    return 0;
-		}
-	END
+ctempl() {
+    cp $1 ~/.template.c
 }
 
 cpprun() {
@@ -50,20 +42,11 @@ cpprun() {
 }
 
 cppnew() {
-    cat >$1.cpp <<-END
-		#include <iostream>
-		#include <string>
+    cp ~/.template.cpp $1.cpp
+}
 
-		using namespace std;
-
-		string exercicio() { return "Hello world!"; }
-
-		int main() {
-		    cout << exercicio();
-
-		    return 0;
-		}
-	END
+cpptempl() {
+    cp $1 ~/.template.cpp
 }
 
 hidevscc() {
@@ -91,6 +74,10 @@ ${GREEN}cppnew ${LIGHTBLUE}[nome do arquivo]${NOCOLOR}\tgera um novo arquivo C++
 ${GREEN}cpprun ${LIGHTBLUE}[nome do arquivo.cpp]${NOCOLOR}\tcompila e roda um código em C++ (use ${TTYBOLD}TAB${TTYRESET} para completar o nome${LINEBREAK}do arquivo ao escrever na linha de comando).
 
 ${GREEN}out${NOCOLOR}\t\t\t\troda o último código em C/C++ compilado com ${LIGHTBLUE}crun${NOCOLOR} ou ${LIGHTBLUE}cpprun${NOCOLOR} na${LINEBREAK}pasta atual.
+
+${GREEN}ctempl ${LIGHTBLUE}[nome do arquivo.c]${NOCOLOR}\tredefine o template inicial para arquivos C.
+
+${GREEN}cpptempl ${LIGHTBLUE}[nome do arquivo.cpp]${NOCOLOR}\tredefine o template inicial para arquivos C++.
 
 ${GREEN}hidevscc${NOCOLOR}\t\t\tcaso esteja usando VS Code, este comando torna invisíveis os${LINEBREAK}arquivos de compilação para não poluir a área de trabalho.
 "

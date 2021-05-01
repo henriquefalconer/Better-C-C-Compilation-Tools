@@ -1,18 +1,18 @@
 #!/bin/bash
 
 abort() {
-    printf "\n%s\n\n" "$@"
+    printf "$1\n\n"
     exit 1
 }
 
 if [ -z "${BASH_VERSION:-}" ]; then
-    abort "Bash é necessário para rodar este script."
+    abort "\nBash é necessário para rodar este script."
 fi
 
 # Primeiro verifica o sistema operacional.
 OS="$(uname)"
 if [[ "$OS" != "Darwin" && "$OS" != "Linux" ]]; then
-    abort "Este script apenas suporta macOS e Linux."
+    abort "\nEste script apenas suporta macOS e Linux."
 fi
 
 # Formatação de strings
@@ -40,8 +40,13 @@ else
     save ~/.bashrc
 fi
 
+# Verifica se os comandos foram carregados com o "source".
+if ! command -v chelp &>/dev/null; then
+    abort "🎉 Configuração feita! Para começar a utilizar, feche este shell, abra-o novamente e rode ${LIGHTBLUE}chelp${NOCOLOR}."
+fi
+
 # Aguarda input do usuário para mostrar novos comandos.
-printf "🎉 Configuração feita! aperte ${TTYBOLD}ENTER${TTYRESET} para visualizar os novos comandos.\n"
+printf "🎉 Configuração feita! Aperte ${TTYBOLD}ENTER${TTYRESET} para visualizar os novos comandos.\n"
 read
 
 # Mostra novos comandos.

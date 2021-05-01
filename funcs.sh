@@ -1,4 +1,3 @@
-
 # ------ Start of Better C/C++ Compilation Tools ------
 
 BETTERCCPPVERS='1.0'
@@ -11,6 +10,12 @@ NOCOLOR='\e[0m'
 TTYBOLD='\033[1;39m'
 TTYRESET='\033[1;0m'
 LINEBREAK='\n\t\t\t\t⮑  '
+
+# Se o sistema for Linux, remover caractere unicode.
+OS="$(uname)"
+if [[ "$OS" == "Linux" ]]; then
+    LINEBREAK='\n\t\t\t\t'
+fi
 
 echoeval() {
     echo "${PURPLE}$ $1${NOCOLOR}"

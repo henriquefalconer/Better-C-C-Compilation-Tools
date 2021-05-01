@@ -36,7 +36,7 @@ savefuncs() {
     printf " Feito!\n\n"
     printf "3/3 📀 Salvando-os em ${LIGHTBLUE}$1${NOCOLOR}..."
     source $1
-    printf " Salvo!\n\n"
+    printf " Salvos!\n\n"
 }
 
 # Seleciona o path de instalação.
@@ -48,11 +48,11 @@ fi
 
 # Verifica se os comandos foram carregados com o "source".
 if ! command -v chelp &>/dev/null; then
-    abort "🎉 Configuração feita! Para começar a utilizar, feche este shell, abra-o novamente e rode ${LIGHTBLUE}chelp${NOCOLOR}."
+    abort "🎉 Configuração feita! para começar a utilizar, feche este shell, abra-o novamente e rode ${LIGHTBLUE}chelp${NOCOLOR}."
 fi
 
 # Aguarda input do usuário para mostrar novos comandos.
-printf "🎉 Configuração feita! Aperte ${TTYBOLD}ENTER${TTYRESET} para visualizar os novos comandos.\n"
+printf "🎉 Configuração feita! aperte ${TTYBOLD}ENTER${TTYRESET} para visualizar os novos comandos.\n"
 read
 
 # Mostra novos comandos.

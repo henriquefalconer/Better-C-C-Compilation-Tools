@@ -1,5 +1,5 @@
 
-# ------ Start of Better C/C++ Compilation Tools ------
+# ------ Start of Better C/C++ Compilation Tools v1.0 ------
 
 echoeval() {
 	PURPLE='\e[0;35m'
@@ -40,9 +40,9 @@ chelp() {
 	NOCOLOR='\e[0m'
 	LINEBREAK='\n\t\t\t\t⮑  '
 	if [ "$1" = "new" ]; then
-		echo '\n🎉 Foram criados os seguintes comandos!'
+		printf '\n🎉 Foram criados os seguintes comandos!\n'
 	else
-		echo '\nComandos para rodar programas em C/C++! 💻'
+		printf '\nComandos para rodar programas em C/C++! 💻\n'
 	fi
 	INSTRUCTIONS="
 ${GREEN}cnew ${LIGHTBLUE}[nome do arquivo]${NOCOLOR}\t\tgera um novo arquivo C na pasta atual, com um template inicial.
@@ -57,9 +57,9 @@ ${GREEN}out${NOCOLOR}\t\t\t\troda o último código em C/C++ compilado com ${LIG
 
 ${GREEN}hidevscc${NOCOLOR}\t\t\tcaso esteja usando VS Code, este comando torna invisíveis os${LINEBREAK}arquivos de compilação para não poluir a área de trabalho.
 "
-	echo "\n${INSTRUCTIONS}\n"
-	[ "$1" = "new" ] && echo "Para visualizar este menu novamente, é só digitar ${LIGHTBLUE}chelp${NOCOLOR} 😉\n"
-	echo "Feito por ${LIGHTBLUE}@henriquefalconer${NOCOLOR} (https://github.com/henriquefalconer)\n"
+	printf "\n${INSTRUCTIONS}\n\n"
+	[ "$1" = "new" ] && printf "Para visualizar este menu novamente, é só digitar ${LIGHTBLUE}chelp${NOCOLOR} 😉\n\n"
+	printf "Feito por ${LIGHTBLUE}@henriquefalconer${NOCOLOR} (https://github.com/henriquefalconer)\n\n"
 }
 
-# ------ End of Better C/C++ Compilation Tools ------
+# ------ End of Better C/C++ Compilation Tools v1.0 ------

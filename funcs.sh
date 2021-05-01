@@ -10,12 +10,12 @@ GREEN='\e[32m'
 NOCOLOR='\e[0m'
 TTYBOLD='\033[1;39m'
 TTYRESET='\033[1;0m'
-LINEBREAK='\n\t\t\t\t⮑  '
+LINEBREAK='⮑  '
 
 # Se o sistema for Linux, remover caractere unicode.
 OS="$(uname)"
 if [[ "$OS" == "Linux" ]]; then
-    LINEBREAK='\n\t\t\t\t'
+    LINEBREAK=''
 fi
 
 echoeval() {
@@ -62,26 +62,25 @@ hidevscc() {
 	END
 }
 
+printcommand() {
+    NAME="${GREEN}$1 ${LIGHTBLUE}$2${NOCOLOR}"
+    TABS="\t\t\t\t"
+    AVAILABLECOL="$((COLUMNS - ${#LINEBREAK}))"
+    DESC="$(printf "${TABS}$4\n" | fmt -w ${AVAILABLECOL})"
+    DESC="$(echo ${DESC:4} | sed "s/${TABS}/${TABS}${LINEBREAK}/g")"
+    printf "${NAME}$3${DESC}\n"
+}
+
 chelp() {
-    printf "\nComandos para rodar programas em C/C++! 💻"
-    INSTRUCTIONS="
-${GREEN}cnew ${LIGHTBLUE}[nome do arquivo]${NOCOLOR}\t\tgera um novo arquivo C na pasta atual, com um template inicial.
-
-${GREEN}crun ${LIGHTBLUE}[nome do arquivo.c]${NOCOLOR}\tcompila e roda um código em C (use ${TTYBOLD}TAB${TTYRESET} para completar o nome${LINEBREAK}do arquivo ao escrever na linha de comando).
-
-${GREEN}cppnew ${LIGHTBLUE}[nome do arquivo]${NOCOLOR}\tgera um novo arquivo C++ na pasta atual, com um template inicial.
-
-${GREEN}cpprun ${LIGHTBLUE}[nome do arquivo.cpp]${NOCOLOR}\tcompila e roda um código em C++ (use ${TTYBOLD}TAB${TTYRESET} para completar o nome${LINEBREAK}do arquivo ao escrever na linha de comando).
-
-${GREEN}out${NOCOLOR}\t\t\t\troda o último código em C/C++ compilado com ${LIGHTBLUE}crun${NOCOLOR} ou ${LIGHTBLUE}cpprun${NOCOLOR} na${LINEBREAK}pasta atual.
-
-${GREEN}ctempl ${LIGHTBLUE}[nome do arquivo.c]${NOCOLOR}\tredefine o template inicial para arquivos C.
-
-${GREEN}cpptempl ${LIGHTBLUE}[nome do arquivo.cpp]${NOCOLOR}\tredefine o template inicial para arquivos C++.
-
-${GREEN}hidevscc${NOCOLOR}\t\t\tcaso esteja usando VS Code, este comando torna invisíveis os${LINEBREAK}arquivos de compilação para não poluir a área de trabalho.
-"
-    printf "\n${INSTRUCTIONS}\n"
+    printf "\nComandos para rodar programas em C/C++! 💻\n\n"
+    printcommand 'cnew' '[nome do arquivo]' '\t\t' "gera um novo arquivo C na pasta atual, com um template inicial."
+    printcommand 'crun' '[nome do arquivo.c]' '\t' "compila e roda um código em C (use \\${TTYBOLD}TAB\\${TTYRESET} para completar o nome do arquivo ao escrever na linha de comando)."
+    printcommand 'cppnew' '[nome do arquivo]' '\t' "gera um novo arquivo C++ na pasta atual, com um template inicial."
+    printcommand 'cpprun' '[nome do arquivo.cpp]' '\t' "compila e roda um código em C++ (use \\${TTYBOLD}TAB\\${TTYRESET} para completar o nome do arquivo ao escrever na linha de comando)."
+    printcommand 'out' '' '\t\t\t\t' "roda o último código em C/C++ compilado com \\${LIGHTBLUE}crun\\${NOCOLOR} ou \\${LIGHTBLUE}cpprun\\${NOCOLOR} na pasta atual."
+    printcommand 'ctempl' '[nome do arquivo.c]' '\t' "redefine o template inicial para arquivos C."
+    printcommand 'cpptempl' '[nome do arquivo.cpp]' '\t' "redefine o template inicial para arquivos C++."
+    printcommand 'hidevscc' '' '\t\t\t' "caso esteja usando VS Code, este comando torna invisíveis os arquivos de compilação para não poluir a área de trabalho."
     printf "${TTYBOLD}Better C/C++ Tools v${BETTERCCPPVERS}${TTYRESET} - feito por ${LIGHTBLUE}@henriquefalconer${NOCOLOR} (https://github.com/henriquefalconer)\n\n"
     printf "Sugestões ou problemas podem ser submetidos aqui: ${TTYBOLD}https://github.com/henriquefalconer/better-c-cpp-tools/issues${TTYRESET}\n\n"
 }

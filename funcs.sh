@@ -1,14 +1,14 @@
 # ------ Start of Better C/C++ Compilation Tools ------
 
-BETTERCCPPVERS="1.0"
+BETTERCCPPVERS='1.0'
 
 # Formatação de strings
 LIGHTBLUE='\e[94m'
 PURPLE='\e[0;35m'
 GREEN='\e[32m'
 NOCOLOR='\e[0m'
-TTYBOLD="\033[1;39m"
-TTYRESET="\033[1;0m"
+TTYBOLD='\033[1;39m'
+TTYRESET='\033[1;0m'
 LINEBREAK='\n\t\t\t\t⮑  '
 
 echoeval() {

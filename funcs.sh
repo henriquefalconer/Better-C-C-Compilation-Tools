@@ -89,7 +89,7 @@ ${GREEN}hidevscc${NOCOLOR}\t\t\tcaso esteja usando VS Code, este comando torna i
 "
     printf "\n${INSTRUCTIONS}\n"
     printf "${TTYBOLD}Better C/C++ Compilation Tools v${BETTERCCPPVERS}${TTYRESET} - feito por ${LIGHTBLUE}@henriquefalconer${NOCOLOR} (https://github.com/henriquefalconer)\n\n"
-	printf "Sugestões ou problemas podem ser submetidos aqui: https://github.com/henriquefalconer/better-c-cpp-compilation-tools/issues\n\n"
+	printf "Sugestões ou problemas podem ser submetidos aqui: ${TTYBOLD}https://github.com/henriquefalconer/better-c-cpp-compilation-tools/issues${TTYRESET}\n\n"
 }
 
 # ------ End of Better C/C++ Compilation Tools ------

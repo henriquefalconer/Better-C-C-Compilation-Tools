@@ -52,9 +52,4 @@ if ! command -v chelp &>/dev/null; then
 fi
 
 # Aguarda input do usuário para mostrar novos comandos.
-printf "🎉 Configuração feita! aperte ${TTYBOLD}ENTER${TTYRESET} para visualizar os novos comandos.\n"
-read
-
-# Mostra novos comandos.
-chelp
-printf "Para visualizar este menu novamente, é só digitar ${LIGHTBLUE}chelp${NOCOLOR} 😉\n\n"
+printf "🎉 Configuração feita! para visualizar a lista de comandos, basta rodar ${LIGHTBLUE}chelp${NOCOLOR}.\n\n"

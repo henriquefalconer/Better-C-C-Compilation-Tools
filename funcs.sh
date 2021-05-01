@@ -13,17 +13,17 @@ TTYRESET='\033[1;0m'
 LINEBREAK='⮑  '
 
 # Se o sistema for Linux, remover caractere unicode.
-OS="$(uname)"
-if [[ "$OS" == "Linux" ]]; then
+OS=$(uname)
+if [[ $OS == 'Linux' ]]; then
     LINEBREAK=''
 fi
 
 echoeval() {
-    echo "${PURPLE}$ $1${NOCOLOR}"
+    echo "$PURPLE$ $1$NOCOLOR"
     eval $1
 }
 
-alias out="echoeval ./.a.out"
+alias out='echoeval ./.a.out'
 
 crun() {
     echoeval "gcc -ansi -pedantic -Wall -fexceptions -g -o .a.out $1" && out
@@ -67,36 +67,36 @@ printcommand() {
     NAME="${GREEN}$1 ${LIGHTBLUE}$2${NOCOLOR}"
     # Indentação das descrições. 
     TABSNO=4
-    TABS=$(printf '\t%.0s' {1..${TABSNO}})
+    TABS=$(printf '\t%.0s' {1..$TABSNO})
     REALNAMESIZE=$(($#1 + $#2 + 1))
     FIRSTLINETABSNO=$(( $TABSNO - $REALNAMESIZE / 8 ))
-    FIRSTLINETABS=$(printf '\t%.0s' {1..${FIRSTLINETABSNO}})
+    FIRSTLINETABS=$(printf '\t%.0s' {1..$FIRSTLINETABSNO})
     # Quantidade de caracteres por linha que o fmt deveria imprimir.
     AVAILABLECOL=$((COLUMNS - ${#LINEBREAK}))
     # Formatação da descrição de modo a não ter quebras de linha em palavras.
-    DESC=$(printf "${TABS}$3\n" | fmt -w ${AVAILABLECOL})
+    DESC=$(printf "${TABS}$3\n" | fmt -w $AVAILABLECOL)
     # Remoção da indentação da primeira linha da descrição e
     # prepararação para a junção com o nome e seus argumentos.
     DESC=${DESC:$TABSNO}
     # Inserção do caractere de quebra de linha em todas as linhas
     # menos a primeira.
-    DESC=$(echo ${DESC} | sed "s/${TABS}/${TABS}${LINEBREAK}/g")
+    DESC=$(echo $DESC | sed "s/$TABS/${TABS}$LINEBREAK/g")
     # Junção com o nome e seus argumentos.
-    printf "${NAME}${FIRSTLINETABS}${DESC}\n\n"
+    printf "${NAME}${FIRSTLINETABS}$DESC\n\n"
 }
 
 chelp() {
-    printf "\nComandos para rodar programas em C/C++! 💻\n\n"
-    printcommand 'cnew' '[nome do arquivo]' "gera um novo arquivo C na pasta atual, com um template inicial."
-    printcommand 'crun' '[nome do arquivo.c]' "compila e roda um código em C (use \\${TTYBOLD}TAB\\${TTYRESET} para completar o nome do arquivo ao escrever na linha de comando)."
-    printcommand 'cppnew' '[nome do arquivo]' "gera um novo arquivo C++ na pasta atual, com um template inicial."
-    printcommand 'cpprun' '[nome do arquivo.cpp]' "compila e roda um código em C++ (use \\${TTYBOLD}TAB\\${TTYRESET} para completar o nome do arquivo ao escrever na linha de comando)."
-    printcommand 'out' '' "roda o último código em C/C++ compilado com \\${LIGHTBLUE}crun\\${NOCOLOR} ou \\${LIGHTBLUE}cpprun\\${NOCOLOR} na pasta atual."
-    printcommand 'ctempl' '[nome do arquivo.c]' "redefine o template inicial para arquivos C."
-    printcommand 'cpptempl' '[nome do arquivo.cpp]' "redefine o template inicial para arquivos C++."
-    printcommand 'hidevscc' '' "caso esteja usando VS Code, este comando torna invisíveis os arquivos de compilação para não poluir a área de trabalho."
-    printf "${TTYBOLD}Better C/C++ Tools v${BETTERCCPPVERS}${TTYRESET} - feito por ${LIGHTBLUE}@henriquefalconer${NOCOLOR} (https://github.com/henriquefalconer)\n\n"
-    printf "Sugestões ou problemas podem ser submetidos aqui: ${TTYBOLD}https://github.com/henriquefalconer/better-c-cpp-tools/issues${TTYRESET}\n\n"
+    printf '\nComandos para rodar programas em C/C++! 💻\n\n'
+    printcommand 'cnew' '[nome do arquivo]' 'gera um novo arquivo C na pasta atual, com um template inicial.'
+    printcommand 'crun' '[nome do arquivo.c]' "compila e roda um código em C (use \\${TTYBOLD}TAB\\$TTYRESET para completar o nome do arquivo ao escrever na linha de comando)."
+    printcommand 'cppnew' '[nome do arquivo]' 'gera um novo arquivo C++ na pasta atual, com um template inicial.'
+    printcommand 'cpprun' '[nome do arquivo.cpp]' "compila e roda um código em C++ (use \\${TTYBOLD}TAB\\$TTYRESET para completar o nome do arquivo ao escrever na linha de comando)."
+    printcommand 'out' '' "roda o último código em C/C++ compilado com \\${LIGHTBLUE}crun\\$NOCOLOR ou \\${LIGHTBLUE}cpprun\\$NOCOLOR na pasta atual."
+    printcommand 'ctempl' '[nome do arquivo.c]' 'redefine o template inicial para arquivos C.'
+    printcommand 'cpptempl' '[nome do arquivo.cpp]' 'redefine o template inicial para arquivos C++.'
+    printcommand 'hidevscc' '' 'caso esteja usando VS Code, este comando torna invisíveis os arquivos de compilação para não poluir a área de trabalho.'
+    printf "${TTYBOLD}Better C/C++ Tools v${BETTERCCPPVERS}$TTYRESET - feito por $LIGHTBLUE@henriquefalconer$NOCOLOR (https://github.com/henriquefalconer)\n\n"
+    printf "Sugestões ou problemas podem ser submetidos aqui: ${TTYBOLD}https://github.com/henriquefalconer/better-c-cpp-tools/issues$TTYRESET\n\n"
 }
 
 # ------ End of Better C/C++ Tools ------

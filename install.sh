@@ -1,18 +1,18 @@
 #!/bin/bash
 
 abort() {
-	printf "\n%s\n\n" "$@"
-	exit 1
+    printf "\n%s\n\n" "$@"
+    exit 1
 }
 
 if [ -z "${BASH_VERSION:-}" ]; then
-	abort "Bash é necessário para rodar este script."
+    abort "Bash é necessário para rodar este script."
 fi
 
 # Primeiro verifica o sistema operacional.
 OS="$(uname)"
 if [[ "$OS" != "Darwin" && "$OS" != "Linux" ]]; then
-	abort "Este script apenas suporta macOS e Linux."
+    abort "Este script apenas suporta macOS e Linux."
 fi
 
 # String formatters
@@ -25,19 +25,19 @@ TTYRESET="\033[1;0m"
 
 # Realiza o curl para obter código.
 save() {
-	printf "\n1/2 ⬇️  Baixando novos comandos de C/C++..."
-	curl -fsSL https://raw.githubusercontent.com/henriquefalconer/better-c-cpp-compilation-tools/main/better_c_cpp.sh >> $1
-	printf " Feito!\n\n"
-	printf "2/2 📀 Salvando-os em ${LIGHTBLUE}$1${NOCOLOR}..."
-	source $1
-	printf " Salvo!\n\n"
+    printf "\n1/2 ⬇️  Baixando novos comandos de C/C++..."
+    curl -fsSL https://raw.githubusercontent.com/henriquefalconer/better-c-cpp-compilation-tools/main/better_c_cpp.sh >>$1
+    printf " Feito!\n\n"
+    printf "2/2 📀 Salvando-os em ${LIGHTBLUE}$1${NOCOLOR}..."
+    source $1
+    printf " Salvo!\n\n"
 }
 
 # Seleciona o path de instalação.
 if [[ "$SHELL" == "/bin/zsh" ]]; then
-	save ~/.zshenv
+    save ~/.zshenv
 else
-	save ~/.bashrc
+    save ~/.bashrc
 fi
 
 # Aguarda input do usuário para mostrar novos comandos.

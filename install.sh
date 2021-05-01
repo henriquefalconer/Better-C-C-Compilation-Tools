@@ -15,7 +15,7 @@ if [[ "$OS" != "Darwin" && "$OS" != "Linux" ]]; then
     abort "Este script apenas suporta macOS e Linux."
 fi
 
-# String formatters
+# Formatação de strings
 LIGHTBLUE='\e[94m'
 PURPLE='\e[0;35m'
 GREEN='\e[32m'

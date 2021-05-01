@@ -6,7 +6,7 @@ Versão 1.0
 
 - Criar novos arquivos C/C++ com templates iniciais
 - Compilar e executar códigos em C/C++, sem precisar lembrar de comandos gigantes do `gcc` ou `g++`
-- Tornar invisíveis arquivos de compilação, que poluem a área de trabalho
+- Tornar invisíveis arquivos de compilação, que simplesmente poluem a área de trabalho e não ajudam o programador
 
 ## Instalação
 

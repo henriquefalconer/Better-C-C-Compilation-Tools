@@ -1,5 +1,5 @@
 
-# ------ Start of Better C/C++ Compilation Tools ------
+# ------ Start of Better C/C++ Tools ------
 
 BETTERCCPPVERS='1.0'
 
@@ -82,8 +82,8 @@ ${GREEN}cpptempl ${LIGHTBLUE}[nome do arquivo.cpp]${NOCOLOR}\tredefine o templat
 ${GREEN}hidevscc${NOCOLOR}\t\t\tcaso esteja usando VS Code, este comando torna invisíveis os${LINEBREAK}arquivos de compilação para não poluir a área de trabalho.
 "
     printf "\n${INSTRUCTIONS}\n"
-    printf "${TTYBOLD}Better C/C++ Compilation Tools v${BETTERCCPPVERS}${TTYRESET} - feito por ${LIGHTBLUE}@henriquefalconer${NOCOLOR} (https://github.com/henriquefalconer)\n\n"
-    printf "Sugestões ou problemas podem ser submetidos aqui: ${TTYBOLD}https://github.com/henriquefalconer/better-c-cpp-compilation-tools/issues${TTYRESET}\n\n"
+    printf "${TTYBOLD}Better C/C++ Tools v${BETTERCCPPVERS}${TTYRESET} - feito por ${LIGHTBLUE}@henriquefalconer${NOCOLOR} (https://github.com/henriquefalconer)\n\n"
+    printf "Sugestões ou problemas podem ser submetidos aqui: ${TTYBOLD}https://github.com/henriquefalconer/better-c-cpp-tools/issues${TTYRESET}\n\n"
 }
 
-# ------ End of Better C/C++ Compilation Tools ------
+# ------ End of Better C/C++ Tools ------

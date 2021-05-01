@@ -26,7 +26,7 @@ TTYRESET="\033[1;0m"
 # Realiza o curl para obter código.
 savefuncs() {
     printf "\n1/3 ⬇️  Baixando novos comandos de C/C++..."
-    curl -fsSL https://raw.githubusercontent.com/henriquefalconer/better-c-cpp-compilation-tools/main/funcs.sh >>$1
+    curl -fsSL https://raw.githubusercontent.com/henriquefalconer/better-c-cpp-tools/main/funcs.sh >>$1
     printf " Feito!\n\n"
     printf "2/3 📀 Salvando-os em ${LIGHTBLUE}$1${NOCOLOR}..."
     source $1
@@ -42,8 +42,8 @@ fi
 
 # Realiza o curl para obter os templates.
 printf "3/3 📄 Baixando templates de C/C++..."
-curl -fsSL https://raw.githubusercontent.com/henriquefalconer/better-c-cpp-compilation-tools/main/templates/template.c >>~/.template.c
-curl -fsSL https://raw.githubusercontent.com/henriquefalconer/better-c-cpp-compilation-tools/main/templates/template.cpp >>~/.template.cpp
+curl -fsSL https://raw.githubusercontent.com/henriquefalconer/better-c-cpp-tools/main/templates/template.c >>~/.template.c
+curl -fsSL https://raw.githubusercontent.com/henriquefalconer/better-c-cpp-tools/main/templates/template.cpp >>~/.template.cpp
 printf " Feito!\n\n"
 
 # Verifica se os comandos foram carregados com o "source".

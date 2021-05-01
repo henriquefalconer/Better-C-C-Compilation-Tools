@@ -11,5 +11,5 @@ Versão 1.0
 ## Instalação
 
 ```bash
-/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/henriquefalconer/better-c-cpp-compilation-tools/main/install.sh)"
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/henriquefalconer/better-c-cpp-tools/main/install.sh)"
 ```

@@ -26,7 +26,7 @@ TTYRESET="\033[1;0m"
 # Realiza o curl para obter código.
 save() {
     printf "\n1/2 ⬇️  Baixando novos comandos de C/C++..."
-    curl -fsSL https://raw.githubusercontent.com/henriquefalconer/better-c-cpp-compilation-tools/main/better_c_cpp.sh >>$1
+    curl -fsSL https://raw.githubusercontent.com/henriquefalconer/better-c-cpp-compilation-tools/main/funcs.sh >>$1
     printf " Feito!\n\n"
     printf "2/2 📀 Salvando-os em ${LIGHTBLUE}$1${NOCOLOR}..."
     source $1

@@ -1,7 +1,5 @@
 # Better C/C++ Compilation Tools 
 
-Ferramentas melhoradas de linha de comando para compilação de códigos C/C++ para macOS (e Linux)
-
 Versão 1.0
 
 ## Funcionalidades

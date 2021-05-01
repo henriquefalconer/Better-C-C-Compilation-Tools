@@ -1,23 +1,42 @@
 
-# ------ Start of Better C/C++ Compilation Tools v1.0 ------
+# ------ Start of Better C/C++ Compilation Tools ------
+
+BETTERCCPPVERS="1.0"
+
+# String formatters
+LIGHTBLUE='\e[94m'
+PURPLE='\e[0;35m'
+GREEN='\e[32m'
+NOCOLOR='\e[0m'
+TTYBOLD="\033[1;39m"
+TTYRESET="\033[1;0m"
+LINEBREAK='\n\t\t\t\t⮑  '
 
 echoeval() {
-	PURPLE='\e[0;35m'
-	NOCOLOR='\e[0m'
 	echo "${PURPLE}$ $1${NOCOLOR}"
 	eval $1
 }
 
-out() {
-	echoeval ./.a.out
-}
+alias out="echoeval ./.a.out"
 
 crun() {
 	echoeval "gcc -ansi -pedantic -Wall -fexceptions -g -o .a.out $1" && out
 }
 
 cnew() {
-	printf '#include <stdio.h>\n\nint onePlusOne() { return 1 + 1; }\n\nint main() {\n	int two = onePlusOne();\n\n	printf("1 + 1 = %%d%s", two);\n\n	return 0;\n}\n' '\n' >$1.c
+	cat >$1.c <<-END
+		#include <stdio.h>
+
+		int onePlusOne() { return 1 + 1; }
+
+		int main() {
+		    int two = onePlusOne();
+
+		    printf("1 + 1 = %%d\n", two);
+
+		    return 0;
+		}
+	END
 }
 
 cpprun() {
@@ -25,36 +44,52 @@ cpprun() {
 }
 
 cppnew() {
-	echo '#include <iostream>\n#include <string>\n\nusing namespace std;\n\nstring exercicio() { return "Hello world!"; }\n\nint main() {\n	cout << exercicio();\n\n	return 0;\n}' >$1.cpp
+	cat >$1.cpp <<-END
+		#include <iostream>
+		#include <string>
+
+		using namespace std;
+
+		string exercicio() { return "Hello world!"; }
+
+		int main() {
+		    cout << exercicio();
+
+		    return 0;
+		}
+	END
 }
 
 hidevscc() {
+	code -g .vscode/settings.json:4:23
 	[ -d .vscode ] || mkdir .vscode
-	echo '{\n	"files.exclude": {\n		".a.out.dSYM": true,\n		".a.out": true\n	}\n}' >.vscode/settings.json
+	cat >.vscode/settings.json <<-END
+		{
+		    "files.exclude": {
+		        ".a.out.dSYM": true,
+		        ".a.out": true
+		    }
+		}
+	END
 }
 
 chelp() {
-	GREEN='\e[32m'
-	LIGHTBLUE='\e[94m'
-	LIGHTGREY='\e[37m'
-	NOCOLOR='\e[0m'
-	LINEBREAK='\n\t\t\t\t⮑  '
-	printf '\nComandos para rodar programas em C/C++! 💻\n'
+	printf "\nComandos para rodar programas em C/C++! 💻"
 	INSTRUCTIONS="
 ${GREEN}cnew ${LIGHTBLUE}[nome do arquivo]${NOCOLOR}\t\tgera um novo arquivo C na pasta atual, com um template inicial.
 
-${GREEN}crun ${LIGHTBLUE}[nome do arquivo.c]${NOCOLOR}\tcompila e roda um código em C (use TAB para completar o nome${LINEBREAK}do arquivo ao escrever na linha de comando).
+${GREEN}crun ${LIGHTBLUE}[nome do arquivo.c]${NOCOLOR}\tcompila e roda um código em C (use ${TTYBOLD}TAB${TTYRESET} para completar o nome${LINEBREAK}do arquivo ao escrever na linha de comando).
 
 ${GREEN}cppnew ${LIGHTBLUE}[nome do arquivo]${NOCOLOR}\tgera um novo arquivo C++ na pasta atual, com um template inicial.
 
-${GREEN}cpprun ${LIGHTBLUE}[nome do arquivo.cpp]${NOCOLOR}\tcompila e roda um código em C++ (use TAB para completar o nome${LINEBREAK}do arquivo ao escrever na linha de comando).
+${GREEN}cpprun ${LIGHTBLUE}[nome do arquivo.cpp]${NOCOLOR}\tcompila e roda um código em C++ (use ${TTYBOLD}TAB${TTYRESET} para completar o nome${LINEBREAK}do arquivo ao escrever na linha de comando).
 
 ${GREEN}out${NOCOLOR}\t\t\t\troda o último código em C/C++ compilado com ${LIGHTBLUE}crun${NOCOLOR} ou ${LIGHTBLUE}cpprun${NOCOLOR} na${LINEBREAK}pasta atual.
 
 ${GREEN}hidevscc${NOCOLOR}\t\t\tcaso esteja usando VS Code, este comando torna invisíveis os${LINEBREAK}arquivos de compilação para não poluir a área de trabalho.
 "
-	printf "\n${INSTRUCTIONS}\n\n"
-	printf "Feito por ${LIGHTBLUE}@henriquefalconer${NOCOLOR} (https://github.com/henriquefalconer)\n\n"
+	printf "\n${INSTRUCTIONS}\n"
+	printf "${TTYBOLD}Better C/C++ Compilation Tools v${BETTERCCPPVERS}${TTYRESET} - feito por ${LIGHTBLUE}@henriquefalconer${NOCOLOR} (https://github.com/henriquefalconer)\n\n"
 }
 
-# ------ End of Better C/C++ Compilation Tools v1.0 ------
+# ------ End of Better C/C++ Compilation Tools ------

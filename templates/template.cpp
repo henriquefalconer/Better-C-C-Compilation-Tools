@@ -6,7 +6,7 @@ using namespace std;
 string exercicio() { return "Hello world!"; }
 
 int main() {
-    cout << exercicio();
+    cout << exercicio() << endl;
 
     return 0;
 }

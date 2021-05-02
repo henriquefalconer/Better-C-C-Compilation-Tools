@@ -65,11 +65,11 @@ hidevscc() {
 
 cupdate() {
     printf "\n🔎  Baixando mais nova versão das funções e templates..."
-    ./install.sh > /dev/null 2>&1
+    /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/henriquefalconer/better-c-cpp-tools/main/install.sh)" >/dev/null 2>&1
     # Verifica se os comandos foram carregados com o "source".
     if ! command -v chelp &>/dev/null; then
         printf " ${RED}Erro${NOCOLOR}\n\n"
-    else 
+    else
         printf " Feito!\n\n"
     fi
 }

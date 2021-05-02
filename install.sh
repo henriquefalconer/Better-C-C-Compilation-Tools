@@ -29,9 +29,16 @@ curl -fsSL https://raw.githubusercontent.com/henriquefalconer/better-c-cpp-tools
 curl -fsSL https://raw.githubusercontent.com/henriquefalconer/better-c-cpp-tools/main/templates/template.cpp >~/.template.cpp
 printf " Feito!\n\n"
 
+clearold() {
+    BETTERCCPPSTART='# ------ Start of Better C\/C\+\+ Tools ------'
+    BETTERCCPPEND='# ------ End of Better C\/C\+\+ Tools ------'
+    awk "/$BETTERCCPPSTART/{stop=1} stop==0{print} /$BETTERCCPPEND/{stop=0}" $1 > .tmp && mv .tmp $1
+}
+
 # Realiza o curl para obter código.
 savefuncs() {
     printf "2/3 ⬇️  Baixando novos comandos de C/C++..."
+    clearold $1
     curl -fsSL https://raw.githubusercontent.com/henriquefalconer/better-c-cpp-tools/main/funcs.sh >>$1
     printf " Feito!\n\n"
     printf "3/3 📀 Salvando-os em ${LIGHTBLUE}$1${NOCOLOR}..."

@@ -19,15 +19,15 @@ if [[ $OS == 'Linux' ]]; then
     LINEBREAK=''
 fi
 
-echoeval() {
+printfeval() {
     printf "$PURPLE$ $1$NOCOLOR\n"
     eval $1
 }
 
-alias out='echoeval ./.a.out'
+alias out='printfeval ./.a.out'
 
 crun() {
-    echoeval "gcc -ansi -pedantic -Wall -fexceptions -g -o .a.out $1" && out
+    printfeval "gcc -ansi -pedantic -Wall -fexceptions -g -o .a.out $1" && out
 }
 
 cnew() {
@@ -39,7 +39,7 @@ ctempl() {
 }
 
 cpprun() {
-    echoeval "g++ -std=c++11 -pedantic -Wall -fexceptions -g -o .a.out $1" && out
+    printfeval "g++ -std=c++11 -pedantic -Wall -fexceptions -g -o .a.out $1" && out
 }
 
 cppnew() {

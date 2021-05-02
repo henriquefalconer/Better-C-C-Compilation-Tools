@@ -7,6 +7,7 @@ BETTERCCPPVERS='1.0'
 LIGHTBLUE='\e[94m'
 PURPLE='\e[0;35m'
 GREEN='\e[32m'
+RED='\e[31m'
 NOCOLOR='\e[0m'
 TTYBOLD='\033[1;39m'
 TTYRESET='\033[1;0m'
@@ -62,6 +63,17 @@ hidevscc() {
 	END
 }
 
+cupdate() {
+    printf "\n🔎  Baixando mais nova versão das funções e templates..."
+    ./install.sh > /dev/null 2>&1
+    # Verifica se os comandos foram carregados com o "source".
+    if ! command -v chelp &>/dev/null; then
+        printf " ${RED}Erro${NOCOLOR}\n\n"
+    else 
+        printf " Feito!\n\n"
+    fi
+}
+
 printcommand() {
     # Nome do comando e seus argumentos.
     NAME="${GREEN}$1 ${LIGHTBLUE}$2${NOCOLOR}"
@@ -95,6 +107,7 @@ chelp() {
     printcommand 'ctempl' '[nome do arquivo.c]' 'redefine o template inicial para arquivos C.'
     printcommand 'cpptempl' '[nome do arquivo.cpp]' 'redefine o template inicial para arquivos C++.'
     printcommand 'hidevscc' '' 'caso esteja usando VS Code, este comando torna invisíveis os arquivos de compilação para não poluir a área de trabalho.'
+    printcommand 'cupdate' '' "baixa e atualiza o \\${TTYBOLD}Better C/C++ Tools\\$TTYRESET para a última versão disponível."
     printf "${TTYBOLD}Better C/C++ Tools v${BETTERCCPPVERS}$TTYRESET - feito por $LIGHTBLUE@henriquefalconer$NOCOLOR (https://github.com/henriquefalconer)\n\n"
     printf "Sugestões ou problemas podem ser submetidos aqui: ${TTYBOLD}https://github.com/henriquefalconer/better-c-cpp-tools/issues$TTYRESET\n\n"
 }

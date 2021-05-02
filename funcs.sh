@@ -65,24 +65,25 @@ hidevscc() {
 printcommand() {
     # Nome do comando e seus argumentos.
     NAME="${GREEN}$1 ${LIGHTBLUE}$2${NOCOLOR}"
-    # Indentação das descrições. 
+    # Indentação das descrições.
     TABSNO=4
-    TABS=$(printf '\t%.0s' {1..$TABSNO})
-    REALNAMESIZE=$(($#1 + $#2 + 1))
-    FIRSTLINETABSNO=$(( $TABSNO - $REALNAMESIZE / 8 ))
-    FIRSTLINETABS=$(printf '\t%.0s' {1..$FIRSTLINETABSNO})
+    FAKETAB="        "
+    FAKETABS=$(printf "$FAKETAB%.0s" $(seq 1 $TABSNO))
+    REALNAMESIZE=$((${#1} + ${#2} + 1))
     # Quantidade de caracteres por linha que o fmt deveria imprimir.
-    AVAILABLECOL=$((COLUMNS - ${#LINEBREAK}))
+    AVAILABLECOL=$((COLUMNS - ${#FAKETABS} - ${#LINEBREAK}))
     # Formatação da descrição de modo a não ter quebras de linha em palavras.
-    DESC=$(printf "${TABS}$3\n" | fmt -w $AVAILABLECOL)
+    DESC=$(printf "\n$3" | fmt -w $AVAILABLECOL)
     # Remoção da indentação da primeira linha da descrição e
     # prepararação para a junção com o nome e seus argumentos.
-    DESC=${DESC:$TABSNO}
+    DESC=$(echo "$DESC" | tr '\t' "$FAKETAB")
+    DESC=$(echo "$DESC" | sed -e ':a' -e 'N' -e '$!ba' -e "s/\n/\n$FAKETABS/g")
+    DESC=${DESC:$REALNAMESIZE+1}
     # Inserção do caractere de quebra de linha em todas as linhas
     # menos a primeira.
-    DESC=$(echo $DESC | sed "s/$TABS/${TABS}$LINEBREAK/g")
+    DESC=$(echo "$DESC" | sed "s/$FAKETABS/${FAKETABS}$LINEBREAK/g")
     # Junção com o nome e seus argumentos.
-    printf "${NAME}${FIRSTLINETABS}$DESC\n\n"
+    printf "${NAME}$DESC\n\n"
 }
 
 chelp() {

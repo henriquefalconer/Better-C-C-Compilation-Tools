@@ -19,7 +19,7 @@ if [[ $OS == 'Linux' ]]; then
 fi
 
 echoeval() {
-    echo "$PURPLE$ $1$NOCOLOR"
+    printf "$PURPLE$ $1$NOCOLOR\n"
     eval $1
 }
 

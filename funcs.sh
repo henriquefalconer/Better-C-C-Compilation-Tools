@@ -76,7 +76,6 @@ printcommand() {
     DESC=$(printf "\n$3" | fmt -w $AVAILABLECOL)
     # Remoção da indentação da primeira linha da descrição e
     # prepararação para a junção com o nome e seus argumentos.
-    DESC=$(echo "$DESC" | tr '\t' "$FAKETAB")
     DESC=$(echo "$DESC" | sed -e ':a' -e 'N' -e '$!ba' -e "s/\n/\n$FAKETABS/g")
     DESC=${DESC:$REALNAMESIZE+1}
     # Inserção do caractere de quebra de linha em todas as linhas

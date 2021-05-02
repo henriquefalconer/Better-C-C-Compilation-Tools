@@ -25,8 +25,8 @@ TTYRESET="\033[1;0m"
 
 # Realiza o curl para obter os templates.
 printf "1/3 📄 Baixando templates de C/C++..."
-curl -fsSL https://raw.githubusercontent.com/henriquefalconer/better-c-cpp-tools/main/templates/template.c >>~/.template.c
-curl -fsSL https://raw.githubusercontent.com/henriquefalconer/better-c-cpp-tools/main/templates/template.cpp >>~/.template.cpp
+curl -fsSL https://raw.githubusercontent.com/henriquefalconer/better-c-cpp-tools/main/templates/template.c >~/.template.c
+curl -fsSL https://raw.githubusercontent.com/henriquefalconer/better-c-cpp-tools/main/templates/template.cpp >~/.template.cpp
 printf " Feito!\n\n"
 
 # Realiza o curl para obter código.

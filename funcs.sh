@@ -67,6 +67,7 @@ hidevscc() {
 
 cupdate() {
     printf "\n🔎  Baixando mais nova versão das funções e templates..."
+    # TODO: implementar verificação da atualização, utilizando a variável BETTERCCPPVERS
     /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/henriquefalconer/better-c-cpp-tools/main/install.sh)" >/dev/null 2>&1
     # Verifica se os comandos foram carregados com o "source".
     if ! command -v chelp &>/dev/null; then

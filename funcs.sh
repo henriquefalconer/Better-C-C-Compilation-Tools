@@ -36,6 +36,7 @@ cnew() {
 
 ctempl() {
     cp $1 ~/.template.c
+    printf "\nConteúdo do arquivo ${LIGHTBLUE}$1${NOCOLOR} definido como o novo template de C! 🚀\n\n"
 }
 
 cpprun() {
@@ -48,6 +49,7 @@ cppnew() {
 
 cpptempl() {
     cp $1 ~/.template.cpp
+    printf "\nConteúdo do arquivo ${LIGHTBLUE}$1${NOCOLOR} definido como o novo template de C++! 🚀\n\n"
 }
 
 hidevscc() {

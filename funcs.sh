@@ -65,6 +65,25 @@ hidevscc() {
 	END
 }
 
+commentm() {
+    awk '!/^\/\*$|^\*\/$/' $1 | awk '/int main()/{ print "/*" } END{ print "*/" } 1' >tmp
+    cp $1 $1.tmp
+    cp tmp $1
+    zip $2 $1
+    cp $1.tmp $1
+    rm tmp $1.tmp
+}
+
+cppzip() {
+    commentm $1 files
+
+    if [[ $OS == 'Linux' ]]; then
+        find . -regex ".*\.\(cpp\|h\)" -print | zip files -@
+    else
+        find -E . -iregex ".*\.(cpp|h)" -print | zip files -@
+    fi
+}
+
 cupdate() {
     printf "\n🔎  Baixando mais nova versão das funções e templates..."
     # TODO: implementar verificação da atualização, utilizando a variável BETTERCCPPVERS
@@ -109,6 +128,7 @@ chelp() {
     printcommand 'out' '' "roda o último código em C/C++ compilado com \\${LIGHTBLUE}crun\\$NOCOLOR ou \\${LIGHTBLUE}cpprun\\$NOCOLOR na pasta atual."
     printcommand 'ctempl' '[nome do arquivo.c]' 'redefine o template inicial para arquivos C.'
     printcommand 'cpptempl' '[nome do arquivo.cpp]' 'redefine o template inicial para arquivos C++.'
+    printcommand 'cppzip' '[nome do arquivo.cpp]' "comenta o main do arquivo passado e cria files.zip com todos os arquivos .h e .cpp da pasta. \\${TTYBOLD}IMPORTANTE:\\$TTYRESET deve ser rodado na mesma pasta do arquivo passado como parâmetro."
     printcommand 'hidevscc' '' 'caso esteja usando VS Code, este comando torna invisíveis os arquivos de compilação para não poluir a área de trabalho.'
     printcommand 'cupdate' '' "baixa e atualiza o \\${TTYBOLD}Better C/C++ Tools\\$TTYRESET para a última versão disponível."
     printf "${TTYBOLD}Better C/C++ Tools v${BETTERCCPPVERS}$TTYRESET - feito por $LIGHTBLUE@henriquefalconer$NOCOLOR (https://github.com/henriquefalconer)\n\n"

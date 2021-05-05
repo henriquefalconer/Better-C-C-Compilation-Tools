@@ -75,13 +75,12 @@ commentm() {
 }
 
 cppzip() {
-    commentm $1 files
-
     if [[ $OS == 'Linux' ]]; then
         find . -regex ".*\.\(cpp\|h\)" -print | zip files -@
     else
         find -E . -iregex ".*\.(cpp|h)" -print | zip files -@
     fi
+    commentm $1 files
 }
 
 cupdate() {

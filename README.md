@@ -1,6 +1,6 @@
 # Better C/C++ Tools 
 
-Versão 1.0
+Versão 1.0.0
 
 ## Funcionalidades atuais
 

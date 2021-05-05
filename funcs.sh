@@ -1,7 +1,7 @@
 
 # ------ Start of Better C/C++ Tools ------
 
-BETTERCCPPVERS='1.0'
+BETTERCCPPVERS='1.01'
 
 # Formatação de strings
 LIGHTBLUE='\e[94m'

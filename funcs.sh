@@ -54,7 +54,7 @@ cpptempl() {
 
 hidevscc() {
     code -g .vscode/settings.json:4:23
-    [ -d .vscode ] || mkdir .vscode
+    mkdir -p .vscode
     cat >.vscode/settings.json <<-END
 		{
 		    "files.exclude": {

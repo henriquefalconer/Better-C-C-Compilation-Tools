@@ -1,6 +1,6 @@
 # Better C/C++ Tools 
 
-Versão 1.0
+Ferramentas de linha de comando para programação em C/C++ para macOS (e Linux)!
 
 ## Funcionalidades atuais
 

@@ -19,17 +19,17 @@ if [[ $OS == 'Linux' ]]; then
     LINEBREAK=''
 fi
 
-# A partir das releases do projeto, obtém o valor que corresponde com a chave passada da última versão.
+# Obtém o valor que corresponde com a chave passada do JSON de informações da última versão do projeto.
 getlatestversiondata() {
-    printf "$(awk "/^    \"$1\": .+/{print}" <(printf "%s\n" "$CCPPRELEASES") | head -1 | sed -e "s/^    \"$1\": \"\{0,1\}//g" -e "s/\"\{0,1\},\{0,1\}$//g")"
+    printf "$(awk "/^  \"$1\": .+/{print}" <(printf "%s\n" "$CCPPRELEASES") | sed -e "s/^  \"$1\": \"\{0,1\}//g" -e "s/\"\{0,1\},\{0,1\}$//g")"
 }
 
-# Realiza o curl para obter as releases, caso esteja instalando pela primeira vez.
+# Realiza o curl para obter o JSON das informações da última versão do projeto.
 crefreshversions() {
     SECONDSSINCELASTRUN=$(($(date +%s) - LASTTIMECREFRESHRUN))
     if [[ "$SECONDSSINCELASTRUN" -gt 3600 || $1 == 'force' ]]; then
         LASTTIMECREFRESHRUN=$(date +%s)
-        CCPPRELEASES=$(curl -s 'https://api.github.com/repos/henriquefalconer/better-c-cpp-tools/releases')
+        CCPPRELEASES=$(curl -s 'https://api.github.com/repos/henriquefalconer/better-c-cpp-tools/releases/latest')
         if [[ $CCPPRELEASES =~ .*"API rate limit exceeded".* ]]; then
             printf "\nA API do GitHub restringiu seu acesso às versões do projeto. Adicione um tópico em ${TTYBOLD}https://github.com/henriquefalconer/better-c-cpp-tools/issues${TTYRESET} caso isso ocorra repetidamente.\n\n"
             CREFRESHFAILED=true

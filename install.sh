@@ -23,14 +23,14 @@ NOCOLOR='\e[0m'
 TTYBOLD="\033[1;39m"
 TTYRESET="\033[1;0m"
 
-# A partir das releases do projeto, obtém o valor que corresponde com a chave passada da última versão.
+# Obtém o valor que corresponde com a chave passada do JSON de informações da última versão do projeto.
 getlatestversiondata() {
-    printf "$(awk "/^    \"$1\": .+/{print}" <(printf "%s\n" "$CCPPRELEASES") | head -1 | sed -e "s/^    \"$1\": \"\{0,1\}//g" -e "s/\"\{0,1\},\{0,1\}$//g")"
+    printf "$(awk "/^  \"$1\": .+/{print}" <(printf "%s\n" "$CCPPRELEASES") | sed -e "s/^  \"$1\": \"\{0,1\}//g" -e "s/\"\{0,1\},\{0,1\}$//g")"
 }
 
-# Realiza o curl para obter as releases, caso esteja instalando pela primeira vez.
+# Realiza o curl para obter o JSON da última versão, caso esteja instalando pela primeira vez.
 if [ -z "$LATESTVERSIONNAME" ]; then
-    CCPPRELEASES=$(curl -s 'https://api.github.com/repos/henriquefalconer/better-c-cpp-tools/releases')
+    CCPPRELEASES=$(curl -s 'https://api.github.com/repos/henriquefalconer/better-c-cpp-tools/releases/latest')
     if [[ $CCPPRELEASES =~ .*"API rate limit exceeded".* ]]; then
         abort "A API do GitHub restringiu seu acesso às versões do projeto. Adicione um tópico em ${TTYBOLD}https://github.com/henriquefalconer/better-c-cpp-tools/issues${TTYRESET} e tente novamente mais tarde."
     fi

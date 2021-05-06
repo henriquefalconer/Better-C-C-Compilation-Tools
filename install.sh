@@ -57,7 +57,6 @@ savefuncs() {
     printf " Feito!\n\n"
     printf "3/3 📀 Salvando-os em ${LIGHTBLUE}$1${NOCOLOR}..."
     sed -i -e "s/BETTERCCPPVERS='X.X.X'/BETTERCCPPVERS='$LATESTVERSIONNAME'/g" $1
-    source $1
     printf " Salvos!\n\n"
 }
 
@@ -68,10 +67,5 @@ else
     savefuncs ~/.bashrc
 fi
 
-# Verifica se os comandos foram carregados com o "source".
-if [ "$LATESTVERSIONNAME" != "$BETTERCCPPVERS" ]; then
-    abort "🎉 Configuração feita! para começar a utilizar, feche este shell, abra-o novamente e rode ${LIGHTBLUE}chelp${NOCOLOR}."
-fi
-
 # Aguarda input do usuário para mostrar novos comandos.
-printf "🎉 Configuração feita! para visualizar a lista de comandos, basta rodar ${LIGHTBLUE}chelp${NOCOLOR}.\n\n"
+printf "🎉 Configuração feita! para começar a utilizar, feche este shell, abra-o novamente e rode ${LIGHTBLUE}chelp${NOCOLOR}."

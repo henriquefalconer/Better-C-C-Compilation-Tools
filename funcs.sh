@@ -1,4 +1,3 @@
-
 # ------ Start of Better C/C++ Tools ------
 
 BETTERCCPPVERS='X.X.X'
@@ -103,7 +102,7 @@ cupdate() {
     if [ $CREFRESHFAILED = true ]; then
         return 1
     fi
-    
+
     if [ "$LATESTVERSIONNAME" = "$BETTERCCPPVERS" ]; then
         printf "\nVocê já possui a versão mais recente do Better C/C++ Tools.\n\n"
         return 1
@@ -117,10 +116,7 @@ cupdate() {
         printf "\n🔎  Baixando mais nova versão das funções e templates..."
         /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/henriquefalconer/better-c-cpp-tools/main/install.sh)" >/dev/null 2>&1
         printf " Feito!\n\n"
-        # Verifica se os comandos foram carregados com o "source".
-        if [ "$LATESTVERSIONNAME" != "$BETTERCCPPVERS" ]; then
-            printf "\n\nPara utilizar a nova versão, feche este shell e abra-o novamente.\n\n"
-        fi
+        printf "\n\nPara utilizar a nova versão, feche este shell e abra-o novamente.\n\n"
     fi
 }
 

@@ -69,7 +69,7 @@ else
 fi
 
 # Verifica se os comandos foram carregados com o "source".
-if ! which chelp >/dev/null; then
+if [ "$LATESTVERSIONNAME" != "$BETTERCCPPVERS" ] then
     abort "🎉 Configuração feita! para começar a utilizar, feche este shell, abra-o novamente e rode ${LIGHTBLUE}chelp${NOCOLOR}."
 fi
 

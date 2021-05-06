@@ -1,7 +1,5 @@
 # Better C/C++ Tools 
 
-Versão 1.0.0
-
 ## Funcionalidades atuais
 
 - Criar novos arquivos C/C++ com templates iniciais, à escolha do usuário

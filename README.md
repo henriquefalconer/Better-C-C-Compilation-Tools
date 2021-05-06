@@ -1,5 +1,7 @@
 # Better C/C++ Tools 
 
+Ferramentas de linha de comando para programação em C/C++ para macOS (e Linux)
+
 ## Funcionalidades atuais
 
 - Criar novos arquivos C/C++ com templates iniciais, à escolha do usuário

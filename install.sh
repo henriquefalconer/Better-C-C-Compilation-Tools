@@ -53,7 +53,7 @@ clearold() {
 savefuncs() {
     printf "2/3 ⬇️  Baixando novos comandos de C/C++..."
     clearold $1
-    curl -fsSL https://raw.githubusercontent.com/henriquefalconer/better-c-cpp-tools/main/funcs.sh >>$1
+    curl -fsSL https://raw.githubusercontent.com/henriquefalconer/better-c-cpp-tools/feat/versioning/funcs.sh >>$1
     printf " Feito!\n\n"
     printf "3/3 📀 Salvando-os em ${LIGHTBLUE}$1${NOCOLOR}..."
     sed -i -e "s/BETTERCCPPVERS='X.X.X'/BETTERCCPPVERS='$LATESTVERSIONNAME'/g" $1

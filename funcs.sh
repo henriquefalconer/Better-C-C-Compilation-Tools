@@ -56,14 +56,16 @@ printfeval() {
 
 checkoverwrite() {
     printf '\n'
-    if [ -f $1 ]; then
-        printf "O arquivo ${LIGHTBLUE}$1${NOCOLOR} já existe. Você gostaria de sobrescrevê-lo? (Y/n) "
-        read USERRESPONSE
-        printf '\n'
-        if [[ ! "$USERRESPONSE" == 'Y' && ! "$USERRESPONSE" == 'y' && ! "$USERRESPONSE" == '' ]]; then
-            return 1
+    for file in $@; do
+        if [ -f $file ]; then
+            printf "O arquivo ${LIGHTBLUE}$file${NOCOLOR} já existe. Você gostaria de sobrescrevê-lo? (Y/n) "
+            read USERRESPONSE
+            printf '\n'
+            if [[ ! "$USERRESPONSE" == 'Y' && ! "$USERRESPONSE" == 'y' && ! "$USERRESPONSE" == '' ]]; then
+                return 1
+            fi
         fi
-    fi
+    done
 }
 
 alias out='printfeval ./.a.out'
@@ -184,22 +186,24 @@ cppclass() {
     CPPSETTERS=$(formatmultilinetr "$CPPSETTERS" '\n\n// Setters\n')
     CPPMETHODS=$(formatmultilinetr "$CPPMETHODS" '\n\n// Methods\n')
     UPPERCASE=$(printf "$1" | tr '[:lower:]' '[:upper:]')
-    cat >$1.h <<-END
-		#ifndef ${UPPERCASE}_H
-		#define ${UPPERCASE}_H${HIMPORTS}${HLOCALIMPORTS}${HDEFINITIONS}
-		
-		class $1 {
-		   private:${HATTRS}
-		
-		   public:${HGETTERS}${HSETTERS}${HMETHODS}
-		};
-		
-		#endif  // ${UPPERCASE}_H
-	END
-    cat >$1.cpp <<-END
-		#include "$1.h"${CPPGETTERS}${CPPSETTERS}${CPPMETHODS}
-	END
-    printf "\nArquivos ${LIGHTBLUE}$1.h$NOCOLOR e ${LIGHTBLUE}$1.cpp$NOCOLOR criados na sua pasta! 🚀\n\n"
+    if checkoverwrite $1.h $1.cpp; then
+        cat >$1.h <<-END
+			#ifndef ${UPPERCASE}_H
+			#define ${UPPERCASE}_H${HIMPORTS}${HLOCALIMPORTS}${HDEFINITIONS}
+			
+			class $1 {
+			   private:${HATTRS}
+			
+			   public:${HGETTERS}${HSETTERS}${HMETHODS}
+			};
+			
+			#endif  // ${UPPERCASE}_H
+		END
+        cat >$1.cpp <<-END
+			#include "$1.h"${CPPGETTERS}${CPPSETTERS}${CPPMETHODS}
+		END
+        printf "Arquivos ${LIGHTBLUE}$1.h$NOCOLOR e ${LIGHTBLUE}$1.cpp$NOCOLOR criados na sua pasta! 🚀\n\n"
+    fi
 }
 
 cpptempl() {

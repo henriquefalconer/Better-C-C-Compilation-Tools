@@ -58,9 +58,9 @@ checkoverwrite() {
     printf '\n'
     for file in $@; do
         if [ -f $file ]; then
-            printf "O arquivo ${LIGHTBLUE}$file${NOCOLOR} já existe. Você gostaria de sobrescrevê-lo? (Y/n) "
+            printf "O arquivo ${LIGHTBLUE}$file${NOCOLOR} já existe. Você gostaria de sobrescrevê-lo? (Y/n) $TTYBOLD"
             read USERRESPONSE
-            printf '\n'
+            printf "$TTYRESET\n"
             if [[ ! "$USERRESPONSE" == 'Y' && ! "$USERRESPONSE" == 'y' && ! "$USERRESPONSE" == '' ]]; then
                 return 1
             fi
@@ -113,9 +113,9 @@ cppclass() {
     CPPMETHODS=''
     printf "---- 1/2 ${TTYBOLD}ATRIBUTOS$TTYRESET 🍿 ----\n"
     while true; do
-        printf "\nNome (ou ${TTYBOLD}ENTER$TTYRESET para pular): $PURPLE"
+        printf "\nNome (ou ${TTYBOLD}ENTER$TTYRESET para pular): $TTYBOLD"
         read ATTRNAME
-        printf "$NOCOLOR"
+        printf "$TTYRESET"
         [ "$ATTRNAME" = '' ] && break
         ATTRVALUE=''
         ATTRNAMEAPPEND=''
@@ -124,9 +124,9 @@ cppclass() {
             ATTRVALUE=" = $(printf "$ATTRNAME" | sed -e "s/.*= *//g")"
             ATTRNAME=$(printf "$ATTRNAME" | sed -e "s/ *=.*//g")
         fi
-        printf "\nTipo (string, int, int[10] etc.): $PURPLE"
+        printf "\nTipo (string, int, int[10] etc.): $TTYBOLD"
         read ATTRTYPE
-        printf "$NOCOLOR"
+        printf "$TTYRESET"
         if [[ $ATTRTYPE == 'string' && ! $HIMPORTS =~ .*'#include <string>'.* ]]; then
             HIMPORTS="$HIMPORTS\n#include <string>\nusing namespace std;"
         elif [[ $ATTRTYPE =~ .*'\[.*\]'.* ]]; then
@@ -150,16 +150,16 @@ cppclass() {
     done
     printf "\n----- 2/2 ${TTYBOLD}MÉTODOS$TTYRESET 🔧 -----\n"
     while true; do
-        printf "\nNome (ou ${TTYBOLD}ENTER$TTYRESET para pular): $PURPLE"
+        printf "\nNome (ou ${TTYBOLD}ENTER$TTYRESET para pular): $TTYBOLD"
         read METHODNAME
-        printf "$NOCOLOR"
+        printf "$TTYRESET"
         [ "$METHODNAME" = '' ] && break
-        printf "\nTipo de retorno (int, void etc.): $PURPLE"
+        printf "\nTipo de retorno (int, void etc.): $TTYBOLD"
         read METHODTYPE
-        printf "$NOCOLOR"
-        printf "\nLista de parâmetros (ex.: \"string nome, int contatos[]\"): $PURPLE"
+        printf "$TTYRESET"
+        printf "\nLista de parâmetros (ex.: \"string nome, int contatos[]\"): $TTYBOLD"
         read METHODPARAMS
-        printf "$NOCOLOR"
+        printf "$TTYRESET"
         if [[ ($METHODTYPE == 'string' || $METHODPARAMS =~ .*'string'.*) && ! $HIMPORTS =~ .*'#include <string>'.* ]]; then
             HIMPORTS="$HIMPORTS\n#include <string>\nusing namespace std;"
         fi
@@ -255,8 +255,9 @@ cupdate() {
     fi
 
     LATESTVERSIONDESC=$(getlatestversiondata body | sed -e "s/\`/\` /g" -e "s/ \` / \\$LIGHTBLUE/g" -e "s/\` /\\$NOCOLOR/g")
-    printf "\nNovidades do Better C/C++ Tools v$LATESTVERSIONNAME 🚀\n\n$LATESTVERSIONDESC\n\nVocê gostaria de baixar esta versão? (Y/n) "
+    printf "\nNovidades do Better C/C++ Tools v$LATESTVERSIONNAME 🚀\n\n$LATESTVERSIONDESC\n\nVocê gostaria de baixar esta versão? (Y/n) $TTYBOLD"
     read USERRESPONSE
+    printf "$TTYRESET"
 
     if [[ "$USERRESPONSE" == 'Y' || "$USERRESPONSE" == 'y' || "$USERRESPONSE" == '' ]]; then
         printf "\n🔎  Baixando mais nova versão das funções e templates..."

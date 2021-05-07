@@ -54,6 +54,18 @@ printfeval() {
     eval $1
 }
 
+checkoverwrite() {
+    printf '\n'
+    if [ -f $1 ]; then
+        printf "O arquivo ${LIGHTBLUE}$1${NOCOLOR} já existe. Você gostaria de sobrescrevê-lo? (Y/n) "
+        read USERRESPONSE
+        printf '\n'
+        if [[ ! "$USERRESPONSE" == 'Y' && ! "$USERRESPONSE" == 'y' && ! "$USERRESPONSE" == '' ]]; then
+            return 1
+        fi
+    fi
+}
+
 alias out='printfeval ./.a.out'
 
 crun() {
@@ -62,7 +74,10 @@ crun() {
 }
 
 cnew() {
-    cp ~/.template.c $1.c
+    if checkoverwrite $1.c; then
+        cp ~/.template.c $1.c
+        printf "Arquivo ${LIGHTBLUE}$1.c${NOCOLOR} criado na sua pasta!\n\n"
+    fi
 }
 
 ctempl() {
@@ -76,7 +91,10 @@ cpprun() {
 }
 
 cppnew() {
-    cp ~/.template.cpp $1.cpp
+    if checkoverwrite $1.cpp; then
+        cp ~/.template.cpp $1.cpp
+        printf "Arquivo ${LIGHTBLUE}$1.cpp${NOCOLOR} criado na sua pasta!\n\n"
+    fi
 }
 
 cpptempl() {

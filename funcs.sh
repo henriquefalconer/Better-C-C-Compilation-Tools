@@ -100,6 +100,10 @@ cppnew() {
 }
 
 cppclass() {
+    if [ -z $1 ]; then
+        printf "\nVocê deve passar o nome da classe como parâmetro.\n\n"
+        return 1
+    fi
     printf "\nCriando a classe ${TTYBOLD}$1$TTYRESET! 🏭\n\n"
     HIMPORTS=''
     HLOCALIMPORTS=''
@@ -295,12 +299,12 @@ chelp() {
     printcommand 'cnew' '[nome do arquivo]' 'gera um novo arquivo C na pasta atual, com um template inicial.'
     printcommand 'crun' '[nome do arquivo.c]' "compila e roda um código em C (use \\${TTYBOLD}TAB\\$TTYRESET para completar o nome do arquivo ao escrever na linha de comando)."
     printcommand 'cppnew' '[nome do arquivo]' 'gera um novo arquivo C++ na pasta atual, com um template inicial.'
+    printcommand 'cppclass' '[nome da classe]' "gera um par de arquivos .h e .cpp na pasta atual, a partir das informações dadas na linha de comando, além de automaticamente criar setters e getters para todos os atributos. \\$GREEN(Novo!)\\$NOCOLOR"
     printcommand 'cpprun' '[nome do arquivo.cpp]' "compila e roda um código em C++ (use \\${TTYBOLD}TAB\\$TTYRESET para completar o nome do arquivo ao escrever na linha de comando)."
     printcommand 'out' '' "roda o último código em C/C++ compilado com \\${LIGHTBLUE}crun\\$NOCOLOR ou \\${LIGHTBLUE}cpprun\\$NOCOLOR na pasta atual."
     printcommand 'ctempl' '[nome do arquivo.c]' 'redefine o template inicial para arquivos C.'
     printcommand 'cpptempl' '[nome do arquivo.cpp]' 'redefine o template inicial para arquivos C++.'
-    printcommand 'cppclass' '[nome da classe]' "gera novos arquivos .h e .cpp na pasta atual, a partir das informações dadas na linha de comando. Além disso, automaticamente cria setters e getters para todos os atributos. \\$GREEN(Novo!)\\$NOCOLOR"
-    printcommand 'cppzip' '[nome do arquivo.cpp]' "comenta o main do arquivo passado e cria \\${TTYBOLD}files.zip\\$TTYRESET com todos os arquivos .h e .cpp da pasta. \\${TTYBOLD}IMPORTANTE:\\$TTYRESET deve ser rodado na mesma pasta do arquivo passado como parâmetro. \\$GREEN(Novo!)\\$NOCOLOR"
+    printcommand 'cppzip' '[nome do arquivo.cpp]' "comenta o main do arquivo passado e cria \\${TTYBOLD}files.zip\\$TTYRESET com todos os arquivos .h e .cpp da pasta. \\${TTYBOLD}IMPORTANTE:\\$TTYRESET deve ser rodado na mesma pasta do arquivo passado como parâmetro."
     printcommand 'hidevscc' '' 'caso esteja usando VS Code, este comando torna invisíveis os arquivos de compilação para não poluir a área de trabalho.'
     printcommand 'cupdate' '' "baixa e atualiza o \\${TTYBOLD}Better C/C++ Tools\\$TTYRESET para a última versão disponível."
     printf "${TTYBOLD}Better C/C++ Tools v${BETTERCCPPVERS}$TTYRESET - feito por $LIGHTBLUE@henriquefalconer$NOCOLOR (https://github.com/henriquefalconer)\n\n"

@@ -79,6 +79,111 @@ cppnew() {
     cp ~/.template.cpp $1.cpp
 }
 
+cppclass() {
+    printf "\nCriando a classe ${TTYBOLD}$1$TTYRESET! 🏭\n\n"
+    HIMPORTS=''
+    HLOCALIMPORTS=''
+    HDEFINITIONS=''
+    HATTRS=''
+    HGETTERS=''
+    HSETTERS=''
+    HMETHODS=''
+    CPPGETTERS=''
+    CPPSETTERS=''
+    CPPMETHODS=''
+    printf "---- 1/2 ${TTYBOLD}ATRIBUTOS$TTYRESET 🍿 ----\n"
+    while true; do
+        printf "\nNome (ou ${TTYBOLD}ENTER$TTYRESET para pular): $PURPLE"
+        read ATTRNAME
+        printf "$NOCOLOR"
+        [ "$ATTRNAME" = '' ] && break
+        ATTRVALUE=''
+        ATTRNAMEAPPEND=''
+        ATTRNAMEPREPEND=''
+        if [[ $ATTRNAME =~ .*' *= *'.* ]]; then
+            ATTRVALUE=" = $(printf "$ATTRNAME" | sed -e "s/.*= *//g")"
+            ATTRNAME=$(printf "$ATTRNAME" | sed -e "s/ *=.*//g")
+        fi
+        printf "\nTipo (string, int, int[10] etc.): $PURPLE"
+        read ATTRTYPE
+        printf "$NOCOLOR"
+        if [[ $ATTRTYPE == 'string' && ! $HIMPORTS =~ .*'#include <string>'.* ]]; then
+            HIMPORTS="$HIMPORTS\n#include <string>\nusing namespace std;"
+        elif [[ $ATTRTYPE =~ .*'\[.*\]'.* ]]; then
+            ATTRMAXLENGTH=$(printf "$ATTRTYPE" | sed -e "s/.*\[//g" -e "s/\]//g")
+            ATTRTYPE=$(printf "$ATTRTYPE" | sed -e "s/\[.*\]//g")
+            UPPERCASE=$(printf "$ATTRNAME" | tr '[:lower:]' '[:upper:]')
+            HDEFINITIONS="$HDEFINITIONS\n#define MAXIMO_$UPPERCASE $ATTRMAXLENGTH"
+            ATTRNAMEAPPEND="[MAXIMO_${UPPERCASE}]"
+            ATTRNAMEPREPEND="*"
+        fi
+        if [[ $ATTRTYPE =~ ^[A-Z] ]]; then
+            HLOCALIMPORT=$(printf "$ATTRTYPE" | sed -e "s/\*//g")
+            [[ ! $HLOCALIMPORT = $1 && ! $HLOCALIMPORTS =~ .*"$HLOCALIMPORT".* ]] && HLOCALIMPORTS="$HLOCALIMPORTS\n#include \"$HLOCALIMPORT.h\"\nclass $HLOCALIMPORT;"
+        fi
+        HATTRS="$HATTRS\n    $ATTRTYPE ${ATTRNAME}${ATTRNAMEAPPEND}$ATTRVALUE;"
+        CAPITALIZED=$(perl -lne 'use open qw(:std :utf8); print ucfirst' <<<$ATTRNAME)
+        HGETTERS="$HGETTERS\n    ${ATTRTYPE}$ATTRNAMEPREPEND get$CAPITALIZED();"
+        CPPGETTERS="${CPPGETTERS}${ATTRTYPE}$ATTRNAMEPREPEND $1::get$CAPITALIZED() { return this->$ATTRNAME; }\n\n"
+        HSETTERS="$HSETTERS\n    void set$CAPITALIZED($ATTRTYPE${ATTRNAMEPREPEND} $ATTRNAME);"
+        CPPSETTERS="${CPPSETTERS}void $1::set$CAPITALIZED($ATTRTYPE${ATTRNAMEPREPEND} $ATTRNAME) { ${ATTRNAMEPREPEND}this->$ATTRNAME = ${ATTRNAMEPREPEND}$ATTRNAME; }\n\n"
+    done
+    printf "\n----- 2/2 ${TTYBOLD}MÉTODOS$TTYRESET 🔧 -----\n"
+    while true; do
+        printf "\nNome (ou ${TTYBOLD}ENTER$TTYRESET para pular): $PURPLE"
+        read METHODNAME
+        printf "$NOCOLOR"
+        [ "$METHODNAME" = '' ] && break
+        printf "\nTipo de retorno (int, void etc.): $PURPLE"
+        read METHODTYPE
+        printf "$NOCOLOR"
+        printf "\nLista de parâmetros (ex.: \"string nome, int contatos[]\"): $PURPLE"
+        read METHODPARAMS
+        printf "$NOCOLOR"
+        if [[ ($METHODTYPE == 'string' || $METHODPARAMS =~ .*'string'.*) && ! $HIMPORTS =~ .*'#include <string>'.* ]]; then
+            HIMPORTS="$HIMPORTS\n#include <string>\nusing namespace std;"
+        fi
+        # TODO: adicionar local import se existir em METHODPARAMS
+        if [[ $METHODTYPE =~ ^[A-Z] ]]; then
+            HLOCALIMPORT=$(printf "$METHODTYPE" | sed -e "s/\*//g")
+            [[ ! $HLOCALIMPORT = $1 && ! $HLOCALIMPORTS =~ .*"$HLOCALIMPORT".* ]] && HLOCALIMPORTS="$HLOCALIMPORTS\n#include \"$HLOCALIMPORT.h\"\nclass $HLOCALIMPORT;"
+        fi
+        HMETHODS="$HMETHODS\n    $METHODTYPE $METHODNAME($METHODPARAMS);"
+        CPPMETHODS="${CPPMETHODS}$METHODTYPE $1::$METHODNAME($METHODPARAMS) {\n    // TODO: adicionar código\n}\n\n"
+    done
+    formatmultilinetr() {
+        printf "$([ -z "$1" ] || printf "$2$(printf "$1" | tr '\n' "
+")")"
+    }
+    HIMPORTS=$(formatmultilinetr "$HIMPORTS" '\n')
+    HLOCALIMPORTS=$(formatmultilinetr "$HLOCALIMPORTS" '\n')
+    HDEFINITIONS=$(formatmultilinetr "$HDEFINITIONS" '\n')
+    HATTRS=$(formatmultilinetr "$HATTRS")
+    HGETTERS=$(formatmultilinetr "$HGETTERS" '\n    // Getters')
+    HSETTERS=$(formatmultilinetr "$HSETTERS" '\n    // Setters')
+    HMETHODS=$(formatmultilinetr "$HMETHODS" '\n    // Methods')
+    CPPGETTERS=$(formatmultilinetr "$CPPGETTERS" '\n\n// Getters\n')
+    CPPSETTERS=$(formatmultilinetr "$CPPSETTERS" '\n\n// Setters\n')
+    CPPMETHODS=$(formatmultilinetr "$CPPMETHODS" '\n\n// Methods\n')
+    UPPERCASE=$(printf "$1" | tr '[:lower:]' '[:upper:]')
+    cat >$1.h <<-END
+		#ifndef ${UPPERCASE}_H
+		#define ${UPPERCASE}_H${HIMPORTS}${HLOCALIMPORTS}${HDEFINITIONS}
+		
+		class $1 {
+		   private:${HATTRS}
+		
+		   public:${HGETTERS}${HSETTERS}${HMETHODS}
+		};
+		
+		#endif  // ${UPPERCASE}_H
+	END
+    cat >$1.cpp <<-END
+		#include "$1.h"${CPPGETTERS}${CPPSETTERS}${CPPMETHODS}
+	END
+    printf "\nArquivos ${LIGHTBLUE}$1.h$NOCOLOR e ${LIGHTBLUE}$1.cpp$NOCOLOR criados na sua pasta! 🚀\n\n"
+}
+
 cpptempl() {
     cp $1 ~/.template.cpp
     printf "\nConteúdo do arquivo ${LIGHTBLUE}$1${NOCOLOR} definido como o novo template de C++! 🚀\n\n"
@@ -171,6 +276,7 @@ chelp() {
     printcommand 'out' '' "roda o último código em C/C++ compilado com \\${LIGHTBLUE}crun\\$NOCOLOR ou \\${LIGHTBLUE}cpprun\\$NOCOLOR na pasta atual."
     printcommand 'ctempl' '[nome do arquivo.c]' 'redefine o template inicial para arquivos C.'
     printcommand 'cpptempl' '[nome do arquivo.cpp]' 'redefine o template inicial para arquivos C++.'
+    printcommand 'cppclass' '[nome da classe]' "gera novos arquivos .h e .cpp na pasta atual, a partir das informações dadas na linha de comando. Além disso, automaticamente cria setters e getters para todos os atributos. \\$GREEN(Novo!)\\$NOCOLOR"
     printcommand 'cppzip' '[nome do arquivo.cpp]' "comenta o main do arquivo passado e cria \\${TTYBOLD}files.zip\\$TTYRESET com todos os arquivos .h e .cpp da pasta. \\${TTYBOLD}IMPORTANTE:\\$TTYRESET deve ser rodado na mesma pasta do arquivo passado como parâmetro. \\$GREEN(Novo!)\\$NOCOLOR"
     printcommand 'hidevscc' '' 'caso esteja usando VS Code, este comando torna invisíveis os arquivos de compilação para não poluir a área de trabalho.'
     printcommand 'cupdate' '' "baixa e atualiza o \\${TTYBOLD}Better C/C++ Tools\\$TTYRESET para a última versão disponível."

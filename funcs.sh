@@ -115,7 +115,7 @@ cppclass() {
     CPPGETTERS=''
     CPPSETTERS=''
     CPPMETHODS=''
-    printf "---- 1/2 ${TTYBOLD}ATRIBUTOS$TTYRESET 🍿 ----\n"
+    printf -- "---- 1/2 ${TTYBOLD}ATRIBUTOS$TTYRESET 🍿 ----\n"
     while true; do
         printf "\nNome (ou ${TTYBOLD}ENTER$TTYRESET para pular): $TTYBOLD"
         read ATTRNAME

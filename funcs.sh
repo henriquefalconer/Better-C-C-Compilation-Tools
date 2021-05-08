@@ -54,16 +54,28 @@ printfeval() {
     eval $1
 }
 
+readinput() {
+    printf "$1 $TTYBOLD"
+    read $2
+    printf "$TTYRESET"
+}
+
+yesorno() {
+    readinput "$1 (Y/n)" USERRESPONSE
+    if [[ ! "$USERRESPONSE" =~ ^'[yY]{0,1}'$ ]]; then
+        return 1
+    fi
+}
+
 checkoverwrite() {
     printf '\n'
     for file in $@; do
         if [ -f $file ]; then
-            printf "O arquivo ${LIGHTBLUE}$file${NOCOLOR} já existe. Você gostaria de sobrescrevê-lo? (Y/n) $TTYBOLD"
-            read USERRESPONSE
-            printf "$TTYRESET\n"
-            if [[ ! "$USERRESPONSE" == 'Y' && ! "$USERRESPONSE" == 'y' && ! "$USERRESPONSE" == '' ]]; then
+            if ! yesorno "O arquivo ${LIGHTBLUE}$file${NOCOLOR} já existe. Você gostaria de sobrescrevê-lo?"; then
+                printf '\n'
                 return 1
             fi
+            printf '\n'
         fi
     done
 }
@@ -248,22 +260,15 @@ cppzip() {
 
 cupdate() {
     crefreshversions force
-
     if [ $CREFRESHFAILED = true ]; then
         return 1
     fi
-
     if [ "$LATESTVERSIONNAME" = "$BETTERCCPPVERS" ]; then
         printf "\nVocê já possui a versão mais recente do Better C/C++ Tools.\n\n"
         return 1
     fi
-
     LATESTVERSIONDESC=$(getlatestversiondata body | sed -e "s/\`/\` /g" -e "s/ \` / \\$LIGHTBLUE/g" -e "s/\` /\\$NOCOLOR/g")
-    printf "\nNovidades do Better C/C++ Tools v$LATESTVERSIONNAME 🚀\n\n$LATESTVERSIONDESC\n\nVocê gostaria de baixar esta versão? (Y/n) $TTYBOLD"
-    read USERRESPONSE
-    printf "$TTYRESET"
-
-    if [[ "$USERRESPONSE" == 'Y' || "$USERRESPONSE" == 'y' || "$USERRESPONSE" == '' ]]; then
+    if yesorno "\nNovidades do Better C/C++ Tools v$LATESTVERSIONNAME 🚀\n\n$LATESTVERSIONDESC\n\nVocê gostaria de baixar esta versão?"; then
         printf "\n🔎  Baixando mais nova versão das funções e templates..."
         /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/henriquefalconer/better-c-cpp-tools/main/install.sh)" >/dev/null 2>&1
         printf " Feito!\n\n"

@@ -278,7 +278,7 @@ cupdate() {
         return 1
     fi
     LATESTVERSIONDESC=$(getlatestversiondata body | sed -e "s/\`/\` /g" -e "s/ \` / \\$LIGHTBLUE/g" -e "s/\` /\\$NOCOLOR/g")
-    if yesorno "\nNovidades do Better C/C++ Tools v$LATESTVERSIONNAME 🚀\n\n$LATESTVERSIONDESC\n\nVocê gostaria de baixar esta versão?"; then
+    if yesorno "\nNovidades do Better C/C++ Tools v$LATESTVERSIONNAME 🚀\n\n$LATESTVERSIONDESC\n\n${TTYBOLD}Obs.:${TTYRESET} a descrição de todas as versões está disponível em ${TTYBOLD}https://github.com/henriquefalconer/better-c-cpp-tools/releases${TTYRESET}\n\nVocê gostaria de baixar esta versão?"; then
         printf "\n🔎  Baixando mais nova versão das funções e templates..."
         /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/henriquefalconer/better-c-cpp-tools/main/install.sh)" >/dev/null 2>&1
         printf " Feito!\n\n"

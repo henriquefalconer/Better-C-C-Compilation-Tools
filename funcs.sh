@@ -243,8 +243,8 @@ hidevscc() {
     cat >.vscode/settings.json <<-END
 		{
 		    "files.exclude": {
-		        ".a.out.dSYM": true,
-		        ".a.out": true
+		        "**/.a.out.dSYM": true,
+		        "**/.a.out": true
 		    }
 		}
 	END

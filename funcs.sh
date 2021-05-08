@@ -124,14 +124,17 @@ cppclass() {
     HGETTERS=''
     HSETTERS=''
     HMETHODS=''
+    CONSTRUCTORCOMMA=''
+    CONSTRUCTORPARAMS=''
+    CPPCONSTRUCTORBODY=''
+    HDESTRUCTOR=''
+    CPPDESTRUCTOR=''
     CPPGETTERS=''
     CPPSETTERS=''
     CPPMETHODS=''
-    printf -- "---- 1/2 ${TTYBOLD}ATRIBUTOS$TTYRESET 🍿 ----\n"
+    printf -- "---- 1/3 ${TTYBOLD}ATRIBUTOS$TTYRESET 🍿 ----\n"
     while true; do
-        printf "\nNome (ou ${TTYBOLD}ENTER$TTYRESET para pular): $TTYBOLD"
-        read ATTRNAME
-        printf "$TTYRESET"
+        readinput "\nNome (ou ${TTYBOLD}ENTER$TTYRESET para pular):" ATTRNAME
         [ "$ATTRNAME" = '' ] && break
         ATTRVALUE=''
         ATTRNAMEAPPEND=''
@@ -140,10 +143,8 @@ cppclass() {
             ATTRVALUE=" = $(printf "$ATTRNAME" | sed -e "s/.*= *//g")"
             ATTRNAME=$(printf "$ATTRNAME" | sed -e "s/ *=.*//g")
         fi
-        printf "\nTipo (string, int, int[10] etc.): $TTYBOLD"
-        read ATTRTYPE
-        printf "$TTYRESET"
-        if [[ $ATTRTYPE == 'string' && ! $HIMPORTS =~ .*'#include <string>'.* ]]; then
+        readinput "\nTipo (string, int, int[10] etc.):" ATTRTYPE
+        if [[ $ATTRTYPE =~ .*'string'.* && ! $HIMPORTS =~ .*'#include <string>'.* ]]; then
             HIMPORTS="$HIMPORTS\n#include <string>\nusing namespace std;"
         elif [[ $ATTRTYPE =~ .*'\[.*\]'.* ]]; then
             ATTRMAXLENGTH=$(printf "$ATTRTYPE" | sed -e "s/.*\[//g" -e "s/\]//g")
@@ -157,26 +158,27 @@ cppclass() {
             HLOCALIMPORT=$(printf "$ATTRTYPE" | sed -e "s/\*//g")
             [[ ! $HLOCALIMPORT = $1 && ! $HLOCALIMPORTS =~ .*"$HLOCALIMPORT".* ]] && HLOCALIMPORTS="$HLOCALIMPORTS\n#include \"$HLOCALIMPORT.h\"\nclass $HLOCALIMPORT;"
         fi
-        HATTRS="$HATTRS\n    $ATTRTYPE ${ATTRNAME}${ATTRNAMEAPPEND}$ATTRVALUE;"
         CAPITALIZED=$(perl -lne 'use open qw(:std :utf8); print ucfirst' <<<$ATTRNAME)
+        if [[ ! $ATTRTYPE =~ ^'const ' ]]; then
+            CONSTRUCTORPARAMS="${CONSTRUCTORPARAMS}${CONSTRUCTORCOMMA}${ATTRTYPE}$ATTRNAMEPREPEND ${ATTRNAME}"
+            CONSTRUCTORCOMMA=', '
+            ATTRSETTER="${ATTRNAMEPREPEND}this->$ATTRNAME = ${ATTRNAMEPREPEND}$ATTRNAME;"
+            CPPCONSTRUCTORBODY="$CPPCONSTRUCTORBODY\n    ${ATTRSETTER}"
+            ATTRSETTERPARAM="set$CAPITALIZED($ATTRTYPE${ATTRNAMEPREPEND} $ATTRNAME)"
+            HSETTERS="$HSETTERS\n    void ${ATTRSETTERPARAM};"
+            CPPSETTERS="${CPPSETTERS}void $1::${ATTRSETTERPARAM} { ${ATTRSETTER} }\n\n"
+        fi
+        HATTRS="$HATTRS\n    $ATTRTYPE ${ATTRNAME}${ATTRNAMEAPPEND}$ATTRVALUE;"
         HGETTERS="$HGETTERS\n    ${ATTRTYPE}$ATTRNAMEPREPEND get$CAPITALIZED();"
         CPPGETTERS="${CPPGETTERS}${ATTRTYPE}$ATTRNAMEPREPEND $1::get$CAPITALIZED() { return this->$ATTRNAME; }\n\n"
-        HSETTERS="$HSETTERS\n    void set$CAPITALIZED($ATTRTYPE${ATTRNAMEPREPEND} $ATTRNAME);"
-        CPPSETTERS="${CPPSETTERS}void $1::set$CAPITALIZED($ATTRTYPE${ATTRNAMEPREPEND} $ATTRNAME) { ${ATTRNAMEPREPEND}this->$ATTRNAME = ${ATTRNAMEPREPEND}$ATTRNAME; }\n\n"
     done
-    printf "\n----- 2/2 ${TTYBOLD}MÉTODOS$TTYRESET 🔧 -----\n"
+    printf "\n----- 2/3 ${TTYBOLD}MÉTODOS$TTYRESET 🔧 -----\n"
     while true; do
-        printf "\nNome (ou ${TTYBOLD}ENTER$TTYRESET para pular): $TTYBOLD"
-        read METHODNAME
-        printf "$TTYRESET"
+        readinput "\nNome (ou ${TTYBOLD}ENTER$TTYRESET para pular):" METHODNAME
         [ "$METHODNAME" = '' ] && break
-        printf "\nTipo de retorno (int, void etc.): $TTYBOLD"
-        read METHODTYPE
-        printf "$TTYRESET"
-        printf "\nLista de parâmetros (ex.: \"string nome, int contatos[]\"): $TTYBOLD"
-        read METHODPARAMS
-        printf "$TTYRESET"
-        if [[ ($METHODTYPE == 'string' || $METHODPARAMS =~ .*'string'.*) && ! $HIMPORTS =~ .*'#include <string>'.* ]]; then
+        readinput "\nTipo de retorno (int, void etc.):" METHODTYPE
+        readinput "\nLista de parâmetros (ex.: \"string nome, int contatos[]\"):" METHODPARAMS
+        if [[ ($METHODTYPE =~ .*'string'.* || $METHODPARAMS =~ .*'string'.*) && ! $HIMPORTS =~ .*'#include <string>'.* ]]; then
             HIMPORTS="$HIMPORTS\n#include <string>\nusing namespace std;"
         fi
         # TODO: adicionar local import se existir em METHODPARAMS
@@ -187,17 +189,25 @@ cppclass() {
         HMETHODS="$HMETHODS\n    $METHODTYPE $METHODNAME($METHODPARAMS);"
         CPPMETHODS="${CPPMETHODS}$METHODTYPE $1::$METHODNAME($METHODPARAMS) {\n    // TODO: adicionar código\n}\n\n"
     done
+    printf "\n----- 3/3 ${TTYBOLD}CONFIGURAÇÕES$TTYRESET 🔧 -----\n"
+    if yesorno "\nIncluir um destrutor?"; then
+        HDESTRUCTOR="~$1();"
+        CPPDESTRUCTOR="$1::~$1() {\n    // TODO: adicionar lógica de liberação de memória\n}"
+    fi
     formatmultilinetr() {
-        printf "$([ -z "$1" ] || printf "$2$(printf "$1" | tr '\n' "
-")")"
+        [ -z "$1" ] || printf "$2$1"
     }
     HIMPORTS=$(formatmultilinetr "$HIMPORTS" '\n')
     HLOCALIMPORTS=$(formatmultilinetr "$HLOCALIMPORTS" '\n')
     HDEFINITIONS=$(formatmultilinetr "$HDEFINITIONS" '\n')
     HATTRS=$(formatmultilinetr "$HATTRS")
+    HCONSTRUCTOR=$(formatmultilinetr "$1($CONSTRUCTORPARAMS);" '\n    ')
+    HDESTRUCTOR=$(formatmultilinetr "$HDESTRUCTOR" '\n    ')
     HGETTERS=$(formatmultilinetr "$HGETTERS" '\n    // Getters')
     HSETTERS=$(formatmultilinetr "$HSETTERS" '\n    // Setters')
     HMETHODS=$(formatmultilinetr "$HMETHODS" '\n    // Methods')
+    CPPCONSTRUCTOR=$(formatmultilinetr "$1::$1($CONSTRUCTORPARAMS) {${CPPCONSTRUCTORBODY}\n}" '\n\n')
+    CPPDESTRUCTOR=$(formatmultilinetr "$CPPDESTRUCTOR" '\n\n')
     CPPGETTERS=$(formatmultilinetr "$CPPGETTERS" '\n\n// Getters\n')
     CPPSETTERS=$(formatmultilinetr "$CPPSETTERS" '\n\n// Setters\n')
     CPPMETHODS=$(formatmultilinetr "$CPPMETHODS" '\n\n// Methods\n')
@@ -210,13 +220,13 @@ cppclass() {
 			class $1 {
 			   private:${HATTRS}
 			
-			   public:${HGETTERS}${HSETTERS}${HMETHODS}
+			   public:${HCONSTRUCTOR}${HDESTRUCTOR}${HGETTERS}${HSETTERS}${HMETHODS}
 			};
 			
 			#endif  // ${UPPERCASE}_H
 		END
         cat >$1.cpp <<-END
-			#include "$1.h"${CPPGETTERS}${CPPSETTERS}${CPPMETHODS}
+			#include "$1.h"${CPPCONSTRUCTOR}${CPPDESTRUCTOR}${CPPGETTERS}${CPPSETTERS}${CPPMETHODS}
 		END
         printf "Arquivos ${LIGHTBLUE}$1.h$NOCOLOR e ${LIGHTBLUE}$1.cpp$NOCOLOR criados na sua pasta! 🚀\n\n"
     fi

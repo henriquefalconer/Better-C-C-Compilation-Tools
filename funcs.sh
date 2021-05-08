@@ -282,7 +282,7 @@ cupdate() {
         printf "\n🔎  Baixando mais nova versão das funções e templates..."
         /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/henriquefalconer/better-c-cpp-tools/main/install.sh)" >/dev/null 2>&1
         printf " Feito!\n\n"
-        printf "Para utilizar a nova versão, feche este shell e abra-o novamente.\n\n"
+        printf "ℹ️   Para utilizar a nova versão, feche este shell e abra-o novamente.\n\n"
     fi
 }
 

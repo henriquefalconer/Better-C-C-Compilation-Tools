@@ -99,7 +99,7 @@ ctempl() {
     printf "\nConteúdo do arquivo ${LIGHTBLUE}$1${NOCOLOR} definido como o novo template de C! 🚀\n\n"
 }
 
-alias cpprun="printfeval "g++ -std=c++11 *.cpp -o .a.out" && out && ccheckupdate"
+alias cpprun="printfeval \"g++ -std=c++11 *.cpp -o .a.out\" && out && ccheckupdate"
 
 cppnew() {
     if checkoverwrite $1.cpp; then

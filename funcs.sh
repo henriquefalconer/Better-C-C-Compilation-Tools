@@ -40,7 +40,7 @@ crefreshversions() {
     if [[ "$SECONDSSINCELASTRUN" -gt 3600 || $1 == 'force' ]]; then
         LASTTIMECREFRESHRUN=$(date +%s)
         CCPPRELEASES=$(curl -s 'https://api.github.com/repos/henriquefalconer/better-c-cpp-tools/releases/latest')
-        if regexmatch "$CCPPRELEASES" .*"API rate limit exceeded".*; then
+        if regexmatch "$CCPPRELEASES" ".*API rate limit exceeded.*"; then
             printf "\nA API do GitHub restringiu seu acesso às versões do projeto. Adicione um tópico em ${TTYBOLD}https://github.com/henriquefalconer/better-c-cpp-tools/issues${TTYRESET} caso isso ocorra repetidamente.\n\n"
             CREFRESHFAILED=true
         else
@@ -80,7 +80,7 @@ regexmatch() {
 
 yesorno() {
     readinput "$1 (Y/n)" USERRESPONSE
-    if regexmatch "$USERRESPONSE" ^'[^yY]{0,1}'$; then
+    if regexmatch "$USERRESPONSE" '^[^yY]{0,1}$'; then
         return 1
     fi
 }
@@ -158,14 +158,14 @@ cppclass() {
         ATTRVALUE=''
         ATTRNAMEAPPEND=''
         ATTRNAMEPREPEND=''
-        if regexmatch "$ATTRNAME" .*' *= *'.*; then
+        if regexmatch "$ATTRNAME" '.* *= *.*'; then
             ATTRVALUE=" = $(printf "$ATTRNAME" | sed -e "s/.*= *//g")"
             ATTRNAME=$(printf "$ATTRNAME" | sed -e "s/ *=.*//g")
         fi
         readinput "\nTipo (string, int, int[10] etc.):" ATTRTYPE
-        if regexmatch "$ATTRTYPE" .*'string'.* && ! regexmatch "$HIMPORTS" .*'#include <string>'.*; then
+        if regexmatch "$ATTRTYPE" '.*string.*' && ! regexmatch "$HIMPORTS" '.*#include <string>.*'; then
             HIMPORTS="$HIMPORTS\n#include <string>\nusing namespace std;"
-        elif regexmatch "$ATTRTYPE" .*'\[.*\]'.*; then
+        elif regexmatch "$ATTRTYPE" '.*\[.*\].*'; then
             ATTRMAXLENGTH=$(printf "$ATTRTYPE" | sed -e "s/.*\[//g" -e "s/\]//g")
             ATTRTYPE=$(printf "$ATTRTYPE" | sed -e "s/\[.*\]//g")
             UPPERCASE=$(printf "$ATTRNAME" | tr '[:lower:]' '[:upper:]')
@@ -173,12 +173,12 @@ cppclass() {
             ATTRNAMEAPPEND="[MAXIMO_${UPPERCASE}]"
             ATTRNAMEPREPEND="*"
         fi
-        if regexmatch "$ATTRTYPE" ^[A-Z]; then
+        if regexmatch "$ATTRTYPE" '^[A-Z]'; then
             HLOCALIMPORT=$(printf "$ATTRTYPE" | sed -e "s/\*//g")
-            [[ ! $HLOCALIMPORT = $1 ]] && ! regexmatch "$HLOCALIMPORTS" .*"$HLOCALIMPORT".* && HLOCALIMPORTS="$HLOCALIMPORTS\n#include \"$HLOCALIMPORT.h\"\nclass $HLOCALIMPORT;"
+            [[ ! $HLOCALIMPORT = $1 ]] && ! regexmatch "$HLOCALIMPORTS" ".*$HLOCALIMPORT.*" && HLOCALIMPORTS="$HLOCALIMPORTS\n#include \"$HLOCALIMPORT.h\"\nclass $HLOCALIMPORT;"
         fi
         CAPITALIZED=$(perl -lne 'use open qw(:std :utf8); print ucfirst' <<<$ATTRNAME)
-        if ! regexmatch "$ATTRTYPE" ^'const '; then
+        if ! regexmatch "$ATTRTYPE" '^const '; then
             CONSTRUCTORPARAMS="${CONSTRUCTORPARAMS}${CONSTRUCTORCOMMA}${ATTRTYPE}$ATTRNAMEPREPEND ${ATTRNAME}"
             CONSTRUCTORCOMMA=', '
             ATTRSETTER="${ATTRNAMEPREPEND}this->$ATTRNAME = ${ATTRNAMEPREPEND}$ATTRNAME;"
@@ -197,13 +197,13 @@ cppclass() {
         [ "$METHODNAME" = '' ] && break
         readinput "\nTipo de retorno (int, void etc.):" METHODTYPE
         readinput "\nLista de parâmetros (ex.: \"string nome, int contatos[]\"):" METHODPARAMS
-        if (regexmatch "$METHODTYPE" .*'string'.* || regexmatch "$METHODPARAMS" .*'string'.*) && ! regexmatch "$HIMPORTS" .*'#include <string>'.*; then
+        if (regexmatch "$METHODTYPE" '.*string.*' || regexmatch "$METHODPARAMS" '.*string.*') && ! regexmatch "$HIMPORTS" '.*#include <string>.*'; then
             HIMPORTS="$HIMPORTS\n#include <string>\nusing namespace std;"
         fi
         # TODO: adicionar local import se existir em METHODPARAMS
-        if regexmatch "$METHODTYPE" ^[A-Z]; then
+        if regexmatch "$METHODTYPE" '^[A-Z]'; then
             HLOCALIMPORT=$(printf "$METHODTYPE" | sed -e "s/\*//g")
-            [[ ! $HLOCALIMPORT = $1 ]] && ! regexmatch "$HLOCALIMPORTS" .*"$HLOCALIMPORT".* && HLOCALIMPORTS="$HLOCALIMPORTS\n#include \"$HLOCALIMPORT.h\"\nclass $HLOCALIMPORT;"
+            [[ ! $HLOCALIMPORT = $1 ]] && ! regexmatch "$HLOCALIMPORTS" ".*$HLOCALIMPORT.*" && HLOCALIMPORTS="$HLOCALIMPORTS\n#include \"$HLOCALIMPORT.h\"\nclass $HLOCALIMPORT;"
         fi
         HMETHODS="$HMETHODS\n    $METHODTYPE $METHODNAME($METHODPARAMS);"
         CPPMETHODS="${CPPMETHODS}$METHODTYPE $1::$METHODNAME($METHODPARAMS) {\n    // TODO: adicionar código\n}\n\n"

@@ -12,12 +12,22 @@ NOCOLOR='\e[0m'
 TTYBOLD='\033[1;39m'
 TTYRESET='\033[1;0m'
 LINEBREAK='⮑  '
+FINALLINEBREAK='\n'
 
 # Se o sistema for Linux, remover caractere unicode.
 OS=$(uname)
 if [[ $OS == 'Linux' ]]; then
     LINEBREAK=''
 fi
+
+# Se o sistema for Windows, não imprimir quebra de linha final.
+if [[ "$OS" != "Darwin" && "$OS" != "Linux" ]]; then
+    FINALLINEBREAK=''
+fi
+
+finalprint() {
+    printf "$FINALLINEBREAK"
+}
 
 # Obtém o valor que corresponde com a chave passada do JSON de informações da última versão do projeto.
 getlatestversiondata() {
@@ -44,7 +54,8 @@ ccheckupdate() {
     crefreshversions
     if [ $CREFRESHFAILED = false ]; then
         if [ "$LATESTVERSIONNAME" != "$BETTERCCPPVERS" ]; then
-            printf "\n${TTYBOLD}Better C/C++ Tools v${LATESTVERSIONNAME}$TTYRESET já está disponível! Rode ${LIGHTBLUE}cupdate$1$NOCOLOR para visualizar as novas funcionalidades 🚀\n\n"
+            printf "\n${TTYBOLD}Better C/C++ Tools v${LATESTVERSIONNAME}$TTYRESET já está disponível! Rode ${LIGHTBLUE}cupdate$1$NOCOLOR para visualizar as novas funcionalidades 🚀\n"
+            finalprint
         fi
     fi
 }
@@ -90,13 +101,15 @@ crun() {
 cnew() {
     if checkoverwrite $1.c; then
         cp ~/.template.c $1.c
-        printf "Arquivo ${LIGHTBLUE}$1.c${NOCOLOR} criado na sua pasta!\n\n"
+        printf "Arquivo ${LIGHTBLUE}$1.c${NOCOLOR} criado na sua pasta!\n"
+        finalprint
     fi
 }
 
 ctempl() {
     cp $1 ~/.template.c
-    printf "\nConteúdo do arquivo ${LIGHTBLUE}$1${NOCOLOR} definido como o novo template de C! 🚀\n\n"
+    printf "\nConteúdo do arquivo ${LIGHTBLUE}$1${NOCOLOR} definido como o novo template de C! 🚀\n"
+    finalprint
 }
 
 alias cpprun="printfeval \"g++ -std=c++11 *.cpp -o .a.out\" && out && ccheckupdate"
@@ -104,13 +117,15 @@ alias cpprun="printfeval \"g++ -std=c++11 *.cpp -o .a.out\" && out && ccheckupda
 cppnew() {
     if checkoverwrite $1.cpp; then
         cp ~/.template.cpp $1.cpp
-        printf "Arquivo ${LIGHTBLUE}$1.cpp${NOCOLOR} criado na sua pasta!\n\n"
+        printf "Arquivo ${LIGHTBLUE}$1.cpp${NOCOLOR} criado na sua pasta!\n"
+        finalprint
     fi
 }
 
 cppclass() {
     if [ -z $1 ]; then
-        printf "\nVocê deve passar o nome da classe como parâmetro.\n\n"
+        printf "\nVocê deve passar o nome da classe como parâmetro.\n"
+        finalprint
         return 1
     fi
     printf "\nCriando a classe ${TTYBOLD}$1$TTYRESET! 🏭\n\n"
@@ -225,13 +240,15 @@ cppclass() {
         cat >$1.cpp <<-END
 			#include "$1.h"${CPPCONSTRUCTOR}${CPPDESTRUCTOR}${CPPGETTERS}${CPPSETTERS}${CPPMETHODS}
 		END
-        printf "Arquivos ${LIGHTBLUE}$1.h$NOCOLOR e ${LIGHTBLUE}$1.cpp$NOCOLOR criados na sua pasta! 🚀\n\n"
+        printf "Arquivos ${LIGHTBLUE}$1.h$NOCOLOR e ${LIGHTBLUE}$1.cpp$NOCOLOR criados na sua pasta! 🚀\n"
+        finalprint
     fi
 }
 
 cpptempl() {
     cp $1 ~/.template.cpp
-    printf "\nConteúdo do arquivo ${LIGHTBLUE}$1${NOCOLOR} definido como o novo template de C++! 🚀\n\n"
+    printf "\nConteúdo do arquivo ${LIGHTBLUE}$1${NOCOLOR} definido como o novo template de C++! 🚀\n"
+    finalprint
 }
 
 hidevscc() {
@@ -279,7 +296,8 @@ cupdate() {
         printf "\n🔎  Baixando mais nova versão das funções e templates..."
         /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/henriquefalconer/better-c-cpp-tools/main/install.sh)" >/dev/null 2>&1
         printf " Feito!\n\n"
-        printf "ℹ️   Para utilizar a nova versão, feche este shell e abra-o novamente.\n\n"
+        printf "ℹ️   Para utilizar a nova versão, feche este shell e abra-o novamente.\n"
+        finalprint
     fi
 }
 

@@ -9,12 +9,6 @@ if [ -z "${BASH_VERSION:-}" ]; then
     abort "\nBash é necessário para rodar este script."
 fi
 
-# Primeiro verifica o sistema operacional.
-OS="$(uname)"
-if [[ "$OS" != "Darwin" && "$OS" != "Linux" ]]; then
-    abort "\nEste script apenas suporta macOS e Linux."
-fi
-
 # Formatação de strings
 LIGHTBLUE='\e[94m'
 PURPLE='\e[0;35m'

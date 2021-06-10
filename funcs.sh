@@ -252,7 +252,6 @@ cpptempl() {
 }
 
 hidevscc() {
-    code -g .vscode/settings.json:4:23
     mkdir -p .vscode
     cat >.vscode/settings.json <<-END
 		{
@@ -262,6 +261,8 @@ hidevscc() {
 		    }
 		}
 	END
+    printf "\n${LIGHTBLUE}.vscode/settings.json${NOCOLOR} configurado! 🚀\n"
+    finalprint
 }
 
 commentm() {

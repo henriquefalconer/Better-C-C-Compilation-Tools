@@ -241,6 +241,11 @@ cppclass() {
         readinput "\nNome (ou ${TTYBOLD}ENTER$TTYRESET para pular):" METHODNAME
         [ "$METHODNAME" = '' ] && break
         readinput "\nTipo de retorno (int, void etc.):" METHODTYPE
+        METHODVIRTUALTYPE=''
+        if regexmatch "$METHODTYPE" '^virtual '; then
+            METHODTYPE=${METHODTYPE:8}
+            METHODVIRTUALTYPE='virtual '
+        fi
         readinput "\nLista de parâmetros (ex.: \"string nome, int contatos[]\"):" METHODPARAMS
         if (regexmatch "$METHODTYPE" '.*string.*' || regexmatch "$METHODPARAMS" '.*string.*') && ! regexmatch "$HIMPORTS" '.*#include <string>.*'; then
             HIMPORTS="$HIMPORTS\n#include <string>\nusing namespace std;"
@@ -250,7 +255,7 @@ cppclass() {
             HLOCALIMPORT=$(printf "$METHODTYPE" | sed -e "s/\*//g")
             [[ ! $HLOCALIMPORT = $1 ]] && ! regexmatch "$HLOCALIMPORTS" ".*$HLOCALIMPORT.*" && HLOCALIMPORTS="$HLOCALIMPORTS\n#include \"$HLOCALIMPORT.h\"\nclass $HLOCALIMPORT;"
         fi
-        HMETHODS="$HMETHODS\n    $METHODTYPE $METHODNAME($METHODPARAMS);"
+        HMETHODS="$HMETHODS\n    ${METHODVIRTUALTYPE}$METHODTYPE $METHODNAME($METHODPARAMS);"
         CPPMETHODS="${CPPMETHODS}$METHODTYPE $1::$METHODNAME($METHODPARAMS) {\n    // TODO: adicionar código\n}\n\n"
     done
     printf "\n----- 3/3 ${TTYBOLD}CONFIGURAÇÕES$TTYRESET $WRENCH-----\n"

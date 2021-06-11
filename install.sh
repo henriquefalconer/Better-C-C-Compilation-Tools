@@ -51,10 +51,12 @@ curl -fsSL https://raw.githubusercontent.com/henriquefalconer/better-c-cpp-tools
 printf " Feito!\n\n"
 
 clearold() {
-    BETTERCCPPSTART='# ------ Start of Better C\/C\+\+ Tools ------'
-    BETTERCCPPEND='# ------ End of Better C\/C\+\+ Tools ------'
-    awk "/$BETTERCCPPSTART/{stop=1} stop==0{print} /$BETTERCCPPEND/{stop=0}" $1 > .tmpbettercpp && mv .tmpbettercpp $1
-    [ -f .tmpbettercpp ] && rm .tmpbettercpp
+    if [ -f $1 ]; then
+        BETTERCCPPSTART='# ------ Start of Better C\/C\+\+ Tools ------'
+        BETTERCCPPEND='# ------ End of Better C\/C\+\+ Tools ------'
+        awk "/$BETTERCCPPSTART/{stop=1} stop==0{print} /$BETTERCCPPEND/{stop=0}" $1 > .tmpbettercpp && mv .tmpbettercpp $1
+        [ -f .tmpbettercpp ] && rm .tmpbettercpp
+    fi
 }
 
 # Realiza o curl para obter código.

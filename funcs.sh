@@ -21,9 +21,9 @@ WRENCH='🔧 '
 SEARCHI='🔎  '
 INFOI='ℹ️  '
 
-# Se o sistema for Linux, remover caractere unicode.
+# Se o sistema for Linux ou Windows, remover caractere unicode.
 OS=$(uname)
-if [[ $OS == 'Linux' ]]; then
+if [[ $OS != 'Darwin' ]]; then
     LINEBREAK=''
 fi
 

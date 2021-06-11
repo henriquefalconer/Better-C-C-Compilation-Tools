@@ -20,6 +20,7 @@ POPCORN='🍿 '
 WRENCH='🔧 '
 SEARCHI='🔎  '
 INFOI='ℹ️  '
+COMPUTER='💻'
 
 # Se o sistema for Linux ou Windows, remover caractere unicode.
 OS=$(uname)
@@ -37,6 +38,7 @@ if [[ "$OS" != "Darwin" && "$OS" != "Linux" ]]; then
     WRENCH=''
     SEARCHI=''
     INFOI='❕ '
+    COMPUTER=''
 fi
 
 finalprint() {
@@ -347,7 +349,7 @@ printcommand() {
 }
 
 chelp() {
-    printf '\nComandos para rodar programas em C/C++! 💻\n\n'
+    printf "\nComandos para rodar programas em C/C++! $COMPUTER\n\n"
     printcommand 'cnew' '[nome do arquivo]' 'gera um novo arquivo C na pasta atual, com um template inicial.'
     printcommand 'crun' '[nome do arquivo.c]' "compila e roda um código em C (use \\${TTYBOLD}TAB\\$TTYRESET para completar o nome do arquivo ao escrever na linha de comando)."
     printcommand 'cppnew' '[nome do arquivo]' 'gera um novo arquivo C++ na pasta atual, com um template inicial.'

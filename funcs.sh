@@ -126,15 +126,12 @@ checkparam() {
 alias out='printfeval ./.a.out'
 
 crun() {
-    if checkparam $1 "Você deve passar o nome do arquivo como parâmetro."; then
-        return 1
-    fi
     printfeval "gcc -ansi -pedantic -Wall -fexceptions -g -o .a.out $1" && out
     ccheckupdate
 }
 
 cnew() {
-    if checkparam $1 "Você deve passar o nome do arquivo como parâmetro."; then
+    if checkparam "$1" "Você deve passar o nome do arquivo como parâmetro."; then
         return 1
     fi
     if checkoverwrite $1.c; then
@@ -146,7 +143,7 @@ cnew() {
 }
 
 ctempl() {
-    if checkparam $1 "Você deve passar o nome do arquivo como parâmetro."; then
+    if checkparam "$1" "Você deve passar o nome do arquivo como parâmetro."; then
         return 1
     fi
     cp $1 ~/.ccpptemplates/template.c
@@ -157,7 +154,7 @@ ctempl() {
 alias cpprun="printfeval \"g++ -std=c++11 *.cpp -o .a.out\" && out && ccheckupdate"
 
 cppnew() {
-    if checkparam $1 "Você deve passar o nome do projeto como parâmetro."; then
+    if checkparam "$1" "Você deve passar o nome do projeto como parâmetro."; then
         return 1
     fi
     local createproject() {
@@ -177,7 +174,7 @@ cppnew() {
 }
 
 cppclass() {
-    if checkparam $1 "Você deve passar o nome da classe como parâmetro."; then
+    if checkparam "$1" "Você deve passar o nome da classe como parâmetro."; then
         return 1
     fi
     printf "\nCriando a classe ${TTYBOLD}$1$TTYRESET! $FACTORY\n\n"

@@ -180,14 +180,18 @@ cppclass() {
     printf "\nCriando a classe ${TTYBOLD}$1$TTYRESET! $FACTORY\n\n"
     HIMPORTS=''
     HLOCALIMPORTS=''
+    HPARENTIMPORTS=''
     HDEFINITIONS=''
+    HPARENTNAMES=''
     HATTRS=''
     HGETTERS=''
     HSETTERS=''
     HMETHODS=''
     CONSTRUCTORCOMMA=''
+    CONSTRUCTORPARENTCOMMA=''
     CONSTRUCTORPARAMS=''
     CPPCONSTRUCTORATTRIBUTION=''
+    CPPCONSTRUCTORPARENTATTRIBUTION=''
     HDESTRUCTOR=''
     CPPDESTRUCTOR=''
     CPPGETTERS=''
@@ -222,15 +226,15 @@ cppclass() {
         CAPITALIZED=$(perl -lne 'use open qw(:std :utf8); print ucfirst' <<<$ATTRNAME)
         if ! regexmatch "$ATTRTYPE" '^const ' && [ -z "$ATTRNAMEPREPEND" ]; then
             CONSTRUCTORPARAMS="${CONSTRUCTORPARAMS}${CONSTRUCTORCOMMA}${ATTRTYPE}$ATTRNAMEPREPEND ${ATTRNAME}"
+            CPPCONSTRUCTORATTRIBUTION="$CPPCONSTRUCTORATTRIBUTION${CONSTRUCTORCOMMA}\n    $ATTRNAME($ATTRNAME)"
             CONSTRUCTORCOMMA=', '
-            CPPCONSTRUCTORATTRIBUTION="$CPPCONSTRUCTORATTRIBUTION\n    $ATTRNAME($ATTRNAME)"
             ATTRSETTERPARAM="set$CAPITALIZED($ATTRTYPE $ATTRNAME)"
             HSETTERS="$HSETTERS\n    void ${ATTRSETTERPARAM};"
             CPPSETTERS="${CPPSETTERS}void $1::${ATTRSETTERPARAM} { this->$ATTRNAME = $ATTRNAME; }\n\n"
         fi
         HATTRS="$HATTRS\n    $ATTRTYPE ${ATTRNAME}${ATTRNAMEAPPEND}$ATTRVALUE;"
         HGETTERS="$HGETTERS\n    ${ATTRTYPE}$ATTRNAMEPREPEND get$CAPITALIZED();"
-        CPPGETTERS="${CPPGETTERS}${ATTRTYPE}$ATTRNAMEPREPEND $1::get$CAPITALIZED() { return this->$ATTRNAME; }\n\n"
+        CPPGETTERS="${CPPGETTERS}${ATTRTYPE}$ATTRNAMEPREPEND $1::get$CAPITALIZED() { return $ATTRNAME; }\n\n"
     done
     printf "\n----- 2/3 ${TTYBOLD}MÉTODOS$TTYRESET $WRENCH-----\n"
     while true; do
@@ -254,19 +258,32 @@ cppclass() {
         HDESTRUCTOR="virtual ~$1();"
         CPPDESTRUCTOR="$1::~$1() {\n    // TODO: adicionar lógica de liberação de memória\n}"
     fi
+    if yesorno "\nPossui classe(s) pai?"; then
+        while true; do
+            readinput "\nNome do pai (ou ${TTYBOLD}ENTER$TTYRESET para pular):" CPARENTCLASSNAME
+            [ "$CPARENTCLASSNAME" = '' ] && break
+            CPPCONSTRUCTORPARENTATTRIBUTION="$CPPCONSTRUCTORPARENTATTRIBUTION${CONSTRUCTORPARENTCOMMA}\n    $CPARENTCLASSNAME()"
+            HPARENTIMPORTS="$HPARENTIMPORTS\n#include \"$CPARENTCLASSNAME.h\""
+            HPARENTNAMES="${HPARENTNAMES}${CONSTRUCTORPARENTCOMMA}public $CPARENTCLASSNAME"
+            CONSTRUCTORPARENTCOMMA=', '
+        done
+        [ ! -z "$CPPCONSTRUCTORATTRIBUTION" ] && CPPCONSTRUCTORPARENTATTRIBUTION="${CPPCONSTRUCTORPARENTATTRIBUTION}$CONSTRUCTORPARENTCOMMA"
+    fi
     formatmultilinetr() {
         [ -z "$1" ] || printf "$2$1"
     }
     HIMPORTS=$(formatmultilinetr "$HIMPORTS" '\n')
     HLOCALIMPORTS=$(formatmultilinetr "$HLOCALIMPORTS" '\n')
+    HPARENTIMPORTS=$(formatmultilinetr "$HPARENTIMPORTS" '\n')
     HDEFINITIONS=$(formatmultilinetr "$HDEFINITIONS" '\n')
+    HPARENTNAMES=$(formatmultilinetr "$HPARENTNAMES" ': ')
     HATTRS=$(formatmultilinetr "$HATTRS")
     HCONSTRUCTOR=$(formatmultilinetr "$1($CONSTRUCTORPARAMS);" '\n    ')
     HDESTRUCTOR=$(formatmultilinetr "$HDESTRUCTOR" '\n    ')
     HGETTERS=$(formatmultilinetr "$HGETTERS" '\n    // Getters')
     HSETTERS=$(formatmultilinetr "$HSETTERS" '\n    // Setters')
     HMETHODS=$(formatmultilinetr "$HMETHODS" '\n    // Methods')
-    CPPCONSTRUCTORATTRIBUTION=$(formatmultilinetr "$CPPCONSTRUCTORATTRIBUTION" ':\n    ')
+    CPPCONSTRUCTORATTRIBUTION=$(formatmultilinetr "${CPPCONSTRUCTORPARENTATTRIBUTION}$CPPCONSTRUCTORATTRIBUTION" ':')
     CPPCONSTRUCTOR=$(formatmultilinetr "$1::$1($CONSTRUCTORPARAMS)$CPPCONSTRUCTORATTRIBUTION {}" '\n\n')
     CPPDESTRUCTOR=$(formatmultilinetr "$CPPDESTRUCTOR" '\n\n')
     CPPGETTERS=$(formatmultilinetr "$CPPGETTERS" '\n\n// Getters\n')
@@ -276,9 +293,9 @@ cppclass() {
     if checkoverwrite $1.h $1.cpp; then
         cat >$1.h <<-END
 			#ifndef ${UPPERCASE}_H
-			#define ${UPPERCASE}_H${HIMPORTS}${HLOCALIMPORTS}${HDEFINITIONS}
+			#define ${UPPERCASE}_H${HIMPORTS}${HLOCALIMPORTS}${HPARENTIMPORTS}${HDEFINITIONS}
 			
-			class $1 {
+			class $1${HPARENTNAMES} {
 			   private:${HATTRS}
 			
 			   public:${HCONSTRUCTOR}${HDESTRUCTOR}${HGETTERS}${HSETTERS}${HMETHODS}

@@ -54,7 +54,7 @@ clearold() {
     BETTERCCPPSTART='# ------ Start of Better C\/C\+\+ Tools ------'
     BETTERCCPPEND='# ------ End of Better C\/C\+\+ Tools ------'
     awk "/$BETTERCCPPSTART/{stop=1} stop==0{print} /$BETTERCCPPEND/{stop=0}" $1 > .tmpbettercpp && mv .tmpbettercpp $1
-    rm .tmpbettercpp
+    [ -f .tmpbettercpp ] && rm .tmpbettercpp
 }
 
 # Realiza o curl para obter código.

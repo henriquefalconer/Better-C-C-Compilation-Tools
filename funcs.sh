@@ -187,7 +187,7 @@ cppclass() {
     HMETHODS=''
     CONSTRUCTORCOMMA=''
     CONSTRUCTORPARAMS=''
-    CPPCONSTRUCTORBODY=''
+    CPPCONSTRUCTORATTRIBUTION=''
     HDESTRUCTOR=''
     CPPDESTRUCTOR=''
     CPPGETTERS=''
@@ -220,14 +220,13 @@ cppclass() {
             [[ ! $HLOCALIMPORT = $1 ]] && ! regexmatch "$HLOCALIMPORTS" ".*$HLOCALIMPORT.*" && HLOCALIMPORTS="$HLOCALIMPORTS\n#include \"$HLOCALIMPORT.h\"\nclass $HLOCALIMPORT;"
         fi
         CAPITALIZED=$(perl -lne 'use open qw(:std :utf8); print ucfirst' <<<$ATTRNAME)
-        if ! regexmatch "$ATTRTYPE" '^const '; then
+        if ! regexmatch "$ATTRTYPE" '^const ' && [ -z "$ATTRNAMEPREPEND" ]; then
             CONSTRUCTORPARAMS="${CONSTRUCTORPARAMS}${CONSTRUCTORCOMMA}${ATTRTYPE}$ATTRNAMEPREPEND ${ATTRNAME}"
             CONSTRUCTORCOMMA=', '
-            ATTRSETTER="${ATTRNAMEPREPEND}this->$ATTRNAME = ${ATTRNAMEPREPEND}$ATTRNAME;"
-            CPPCONSTRUCTORBODY="$CPPCONSTRUCTORBODY\n    ${ATTRSETTER}"
-            ATTRSETTERPARAM="set$CAPITALIZED($ATTRTYPE${ATTRNAMEPREPEND} $ATTRNAME)"
+            CPPCONSTRUCTORATTRIBUTION="$CPPCONSTRUCTORATTRIBUTION\n    $ATTRNAME($ATTRNAME)"
+            ATTRSETTERPARAM="set$CAPITALIZED($ATTRTYPE $ATTRNAME)"
             HSETTERS="$HSETTERS\n    void ${ATTRSETTERPARAM};"
-            CPPSETTERS="${CPPSETTERS}void $1::${ATTRSETTERPARAM} { ${ATTRSETTER} }\n\n"
+            CPPSETTERS="${CPPSETTERS}void $1::${ATTRSETTERPARAM} { this->$ATTRNAME = $ATTRNAME; }\n\n"
         fi
         HATTRS="$HATTRS\n    $ATTRTYPE ${ATTRNAME}${ATTRNAMEAPPEND}$ATTRVALUE;"
         HGETTERS="$HGETTERS\n    ${ATTRTYPE}$ATTRNAMEPREPEND get$CAPITALIZED();"
@@ -267,7 +266,8 @@ cppclass() {
     HGETTERS=$(formatmultilinetr "$HGETTERS" '\n    // Getters')
     HSETTERS=$(formatmultilinetr "$HSETTERS" '\n    // Setters')
     HMETHODS=$(formatmultilinetr "$HMETHODS" '\n    // Methods')
-    CPPCONSTRUCTOR=$(formatmultilinetr "$1::$1($CONSTRUCTORPARAMS) {${CPPCONSTRUCTORBODY}\n}" '\n\n')
+    CPPCONSTRUCTORATTRIBUTION=$(formatmultilinetr "$CPPCONSTRUCTORATTRIBUTION" ':\n    ')
+    CPPCONSTRUCTOR=$(formatmultilinetr "$1::$1($CONSTRUCTORPARAMS)$CPPCONSTRUCTORATTRIBUTION {}" '\n\n')
     CPPDESTRUCTOR=$(formatmultilinetr "$CPPDESTRUCTOR" '\n\n')
     CPPGETTERS=$(formatmultilinetr "$CPPGETTERS" '\n\n// Getters\n')
     CPPSETTERS=$(formatmultilinetr "$CPPSETTERS" '\n\n// Setters\n')

@@ -28,8 +28,9 @@ Ferramentas de linha de comando para programação em C/C++ para Linux, macOS e 
 
 1. Baixar o [Git Bash](https://git-scm.com/download/win) (mesmo se já tiver, baixe-o novamente para atualizá-lo)
 2. Instalar o compilador GCC [seguindo estes passos](https://dev.to/gamegods3/how-to-install-gcc-in-windows-10-the-easier-way-422j)
-3. Definir o **Git Bash** como o terminal padrão do VSCode
-4. Fechar e abrir o VSCode
+3. Baixar pacote de ferramentas GNU utilizando o [Gow (Gnu On Windows)](https://github.com/bmatzelle/gow/releases/download/v0.8.0/Gow-0.8.0.exe)
+4. Definir o **Git Bash** como o terminal padrão do VSCode
+5. Fechar e abrir o VSCode
 
 ## Instalação
 

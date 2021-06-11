@@ -114,14 +114,29 @@ checkoverwrite() {
     done
 }
 
+checkparam() {
+    if [ -z $1 ]; then
+        printf "\n$2\n"
+        finalprint
+        return 0
+    fi
+    return 1
+}
+
 alias out='printfeval ./.a.out'
 
 crun() {
+    if checkparam $1 "Você deve passar o nome do arquivo como parâmetro."; then
+        return 1
+    fi
     printfeval "gcc -ansi -pedantic -Wall -fexceptions -g -o .a.out $1" && out
     ccheckupdate
 }
 
 cnew() {
+    if checkparam $1 "Você deve passar o nome do arquivo como parâmetro."; then
+        return 1
+    fi
     if checkoverwrite $1.c; then
         cp ~/.ccpptemplates/template.c $1.c
         printf "Arquivo ${LIGHTBLUE}$1.c${NOCOLOR} criado na sua pasta! $SUCCESS\n"
@@ -131,6 +146,9 @@ cnew() {
 }
 
 ctempl() {
+    if checkparam $1 "Você deve passar o nome do arquivo como parâmetro."; then
+        return 1
+    fi
     cp $1 ~/.ccpptemplates/template.c
     printf "\nConteúdo do arquivo ${LIGHTBLUE}$1${NOCOLOR} definido como o novo template de C! $SUCCESS\n"
     finalprint
@@ -139,6 +157,9 @@ ctempl() {
 alias cpprun="printfeval \"g++ -std=c++11 *.cpp -o .a.out\" && out && ccheckupdate"
 
 cppnew() {
+    if checkparam $1 "Você deve passar o nome do projeto como parâmetro."; then
+        return 1
+    fi
     local createproject() {
         if checkoverwrite $1; then
             rm -rf $1
@@ -156,9 +177,7 @@ cppnew() {
 }
 
 cppclass() {
-    if [ -z $1 ]; then
-        printf "\nVocê deve passar o nome da classe como parâmetro.\n"
-        finalprint
+    if checkparam $1 "Você deve passar o nome da classe como parâmetro."; then
         return 1
     fi
     printf "\nCriando a classe ${TTYBOLD}$1$TTYRESET! $FACTORY\n\n"

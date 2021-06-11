@@ -353,11 +353,11 @@ cppzip() {
         printf '\n'
     fi
     QUANTITY=0
-    for f in *.cpp *.h; do
-        if ! regexmatch "$f" '^\*'; then
-            cppzipsinglefile $f files $CCOMMENTMAIN
-            QUANTITY=$(($QUANTITY+1))
-        fi
+    [ $SHELL = '/bin/zsh' ] && setopt +o nomatch || shopt -s nullglob
+    for f in *.{cpp,h}; do
+        regexmatch "$f" '^\*' && continue
+        cppzipsinglefile $f files $CCOMMENTMAIN
+        QUANTITY=$(($QUANTITY+1))
     done
     if [ $QUANTITY = 1 ]; then
         printf "\n$QUANTITY arquivo comprimido e salvo em ${LIGHTBLUE}files.zip${NOCOLOR}!\n"

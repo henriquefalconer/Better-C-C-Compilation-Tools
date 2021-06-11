@@ -330,22 +330,34 @@ hidevscc() {
     finalprint
 }
 
-commentm() {
-    awk '!/^\/\*$|^\*\/$/' $1 | awk '/int main()/{ print "/*" } END{ print "*/" } 1' >tmp
-    cp $1 $1.tmp
-    cp tmp $1
-    zip $2 $1
-    cp $1.tmp $1
-    rm tmp $1.tmp
+cppzipsinglefile() {
+    if [ $3 = true ]; then
+        awk 'BEGIN{ brackets=999 } /int main()/{ print "/*"; brackets=0 } /\{/{ brackets++ } /\}/{ brackets-- } brackets==0{ print "}\n*/"; stop=1; brackets=999 } stop==0{print}' $1 >tmp
+        if ! diff $1 tmp >> /dev/null; then
+            printf "Função main encontrada em ${LIGHTBLUE}$1${NOCOLOR}\n"
+        fi
+        cp $1 $1.tmp
+        cp tmp $1
+        zip $2 $1 >> /dev/null
+        cp $1.tmp $1
+        rm tmp $1.tmp
+    else
+        zip $2 $1 >> /dev/null
+    fi
 }
 
 cppzip() {
-    if [[ $OS == 'Linux' ]]; then
-        find . -regex ".*\.\(cpp\|h\)" -print | zip files -@
-    else
-        find -E . -iregex ".*\.(cpp|h)" -print | zip files -@
+    CCOMMENTMAIN=false
+    if yesorno "\nVocê deseja comentar a função main?"; then
+        CCOMMENTMAIN=true
+        printf '\n'
     fi
-    commentm $1 files
+    QUANTITY=0
+    for f in *.cpp *.h; do
+        cppzipsinglefile $f files $CCOMMENTMAIN
+        QUANTITY=$(($QUANTITY+1))
+    done
+    printf "\n$QUANTITY arquivos comprimidos e salvos em ${LIGHTBLUE}files.zip${NOCOLOR}!\n\n"
 }
 
 cupdate() {
@@ -399,7 +411,7 @@ chelp() {
     printcommand 'cpprun' '' "compila todos os arquivos C++ da pasta atual, rodando a função main. Deve ser rodado na pasta do projeto. \\${TTYBOLD}IMPORTANTE:\\$TTYRESET se a pasta atual possuir mais de um projeto, ocorrerá um erro."
     printcommand 'out' '' "roda o último código em C/C++ compilado com \\${LIGHTBLUE}crun\\$NOCOLOR ou \\${LIGHTBLUE}cpprun\\$NOCOLOR na pasta atual."
     printcommand 'ctempl' '[nome do arquivo.c]' 'redefine o template inicial para arquivos C.'
-    printcommand 'cppzip' '[nome do arquivo.cpp]' "comenta o main do arquivo passado e cria \\${TTYBOLD}files.zip\\$TTYRESET com todos os arquivos .h e .cpp da pasta. \\${TTYBOLD}IMPORTANTE:\\$TTYRESET deve ser rodado na mesma pasta do arquivo passado como parâmetro."
+    printcommand 'cppzip' '' "localiza e comenta o main do projeto, criando o \\${TTYBOLD}files.zip\\$TTYRESET com todos os arquivos .h e .cpp da pasta atual."
     printcommand 'hidevscc' '' 'caso esteja usando VS Code, este comando torna invisíveis os arquivos de compilação para não poluir a área de trabalho.'
     printcommand 'cupdate' '' "baixa e atualiza o \\${TTYBOLD}Better C/C++ Tools\\$TTYRESET para a última versão disponível."
     printf "${TTYBOLD}Better C/C++ Tools v${BETTERCCPPVERS}$TTYRESET - feito por $LIGHTBLUE@henriquefalconer$NOCOLOR (https://github.com/henriquefalconer)\n\n"

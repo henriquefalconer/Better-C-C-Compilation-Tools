@@ -9,12 +9,6 @@ if [ -z "${BASH_VERSION:-}" ]; then
     abort "\nBash é necessário para rodar este script."
 fi
 
-# Primeiro verifica o sistema operacional.
-OS="$(uname)"
-if [[ "$OS" != "Darwin" && "$OS" != "Linux" ]]; then
-    abort "\nEste script apenas suporta macOS e Linux."
-fi
-
 # Formatação de strings
 LIGHTBLUE='\e[94m'
 PURPLE='\e[0;35m'
@@ -22,6 +16,19 @@ GREEN='\e[32m'
 NOCOLOR='\e[0m'
 TTYBOLD="\033[1;39m"
 TTYRESET="\033[1;0m"
+TEMPLATEI='📄'
+DOWNLOADI='⬇️'
+SAVEI='📀'
+SUCCESS='🎉'
+
+# Se o sistema for Windows, utilizar emojis compatíveis.
+OS=$(uname)
+if [[ "$OS" != "Darwin" && "$OS" != "Linux" ]]; then
+    TEMPLATEI='⬇️  '
+    DOWNLOADI='⬇️ '
+    SAVEI='⬇️  '
+    SUCCESS='✔️  '
+fi
 
 # Obtém o valor que corresponde com a chave passada do JSON de informações da última versão do projeto.
 getlatestversiondata() {
@@ -38,24 +45,27 @@ if [ -z "$LATESTVERSIONNAME" ]; then
 fi
 
 # Realiza o curl para obter os templates.
-printf "1/3 📄 Baixando templates de C/C++..."
+printf "1/3 $TEMPLATEI Baixando templates de C/C++..."
 curl -fsSL https://raw.githubusercontent.com/henriquefalconer/better-c-cpp-tools/main/templates/template.c >~/.template.c
 curl -fsSL https://raw.githubusercontent.com/henriquefalconer/better-c-cpp-tools/main/templates/template.cpp >~/.template.cpp
 printf " Feito!\n\n"
 
 clearold() {
-    BETTERCCPPSTART='# ------ Start of Better C\/C\+\+ Tools ------'
-    BETTERCCPPEND='# ------ End of Better C\/C\+\+ Tools ------'
-    awk "/$BETTERCCPPSTART/{stop=1} stop==0{print} /$BETTERCCPPEND/{stop=0}" $1 > .tmp && mv .tmp $1
+    if [ -f $1 ]; then
+        BETTERCCPPSTART='# ------ Start of Better C\/C\+\+ Tools ------'
+        BETTERCCPPEND='# ------ End of Better C\/C\+\+ Tools ------'
+        awk "/$BETTERCCPPSTART/{stop=1} stop==0{print} /$BETTERCCPPEND/{stop=0}" $1 > .tmpbettercpp && mv .tmpbettercpp $1
+        [ -f .tmpbettercpp ] && rm .tmpbettercpp
+    fi
 }
 
 # Realiza o curl para obter código.
 savefuncs() {
-    printf "2/3 ⬇️  Baixando novos comandos de C/C++..."
+    printf "2/3 $DOWNLOADI  Baixando novos comandos de C/C++..."
     clearold $1
     curl -fsSL https://raw.githubusercontent.com/henriquefalconer/better-c-cpp-tools/main/funcs.sh >>$1
     printf " Feito!\n\n"
-    printf "3/3 📀 Salvando-os em ${LIGHTBLUE}$1${NOCOLOR}..."
+    printf "3/3 $SAVEI Salvando-os em ${LIGHTBLUE}$1${NOCOLOR}..."
     sed -i -e "s/BETTERCCPPVERS='X.X.X'/BETTERCCPPVERS='$LATESTVERSIONNAME'/g" $1
     printf " Salvos!\n\n"
 }
@@ -65,7 +75,13 @@ if [[ "$SHELL" == "/bin/zsh" ]]; then
     savefuncs ~/.zshenv
 else
     savefuncs ~/.bashrc
+    if [ ! -f ~/.bash_profile ]; then
+        cat >~/.bash_profile <<-END
+			test -f ~/.profile && . ~/.profile
+			test -f ~/.bashrc && . ~/.bashrc
+		END
+    fi
 fi
 
 # Aguarda input do usuário para mostrar novos comandos.
-printf "🎉 Configuração feita! para começar a utilizar, feche este shell, abra-o novamente e rode ${LIGHTBLUE}chelp${NOCOLOR}."
+printf "$SUCCESS Configuração feita! para começar a utilizar, feche este shell, abra-o novamente e rode ${LIGHTBLUE}chelp${NOCOLOR}."

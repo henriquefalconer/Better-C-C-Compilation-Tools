@@ -12,12 +12,38 @@ NOCOLOR='\e[0m'
 TTYBOLD='\033[1;39m'
 TTYRESET='\033[1;0m'
 LINEBREAK='⮑  '
+FINALLINEBREAK='\n'
+SUCCESS='🚀'
+ROCKET='🚀'
+FACTORY='🏭'
+POPCORN='🍿 '
+WRENCH='🔧 '
+SEARCHI='🔎  '
+INFOI='ℹ️  '
+COMPUTER='💻'
 
-# Se o sistema for Linux, remover caractere unicode.
+# Se o sistema for Linux ou Windows, remover caractere unicode.
 OS=$(uname)
-if [[ $OS == 'Linux' ]]; then
+if [[ $OS != 'Darwin' ]]; then
     LINEBREAK=''
 fi
+
+# Se o sistema for Windows, utilizar emojis compatíveis e remover quebra de linha final.
+if [[ "$OS" != "Darwin" && "$OS" != "Linux" ]]; then
+    FINALLINEBREAK=''
+    SUCCESS='✔️'
+    ROCKET=''
+    FACTORY=''
+    POPCORN=''
+    WRENCH=''
+    SEARCHI=''
+    INFOI='❕ '
+    COMPUTER=''
+fi
+
+finalprint() {
+    printf "$FINALLINEBREAK"
+}
 
 # Obtém o valor que corresponde com a chave passada do JSON de informações da última versão do projeto.
 getlatestversiondata() {
@@ -30,7 +56,7 @@ crefreshversions() {
     if [[ "$SECONDSSINCELASTRUN" -gt 3600 || $1 == 'force' ]]; then
         LASTTIMECREFRESHRUN=$(date +%s)
         CCPPRELEASES=$(curl -s 'https://api.github.com/repos/henriquefalconer/better-c-cpp-tools/releases/latest')
-        if [[ $CCPPRELEASES =~ .*"API rate limit exceeded".* ]]; then
+        if regexmatch "$CCPPRELEASES" ".*API rate limit exceeded.*"; then
             printf "\nA API do GitHub restringiu seu acesso às versões do projeto. Adicione um tópico em ${TTYBOLD}https://github.com/henriquefalconer/better-c-cpp-tools/issues${TTYRESET} caso isso ocorra repetidamente.\n\n"
             CREFRESHFAILED=true
         else
@@ -44,7 +70,8 @@ ccheckupdate() {
     crefreshversions
     if [ $CREFRESHFAILED = false ]; then
         if [ "$LATESTVERSIONNAME" != "$BETTERCCPPVERS" ]; then
-            printf "\n${TTYBOLD}Better C/C++ Tools v${LATESTVERSIONNAME}$TTYRESET já está disponível! Rode ${LIGHTBLUE}cupdate$1$NOCOLOR para visualizar as novas funcionalidades 🚀\n\n"
+            printf "\n${TTYBOLD}Better C/C++ Tools v${LATESTVERSIONNAME}$TTYRESET já está disponível! Rode ${LIGHTBLUE}cupdate$1$NOCOLOR para visualizar as novas funcionalidades $ROCKET\n"
+            finalprint
         fi
     fi
 }
@@ -60,9 +87,16 @@ readinput() {
     printf "$TTYRESET"
 }
 
+# Permite utilizar regex no Git Bash do Windows (ele não aceita o =~).
+regexmatch() {
+    if ! printf "$1" | grep -E "$2" >> /dev/null; then
+        return 1
+    fi
+}
+
 yesorno() {
     readinput "$1 (Y/n)" USERRESPONSE
-    if [[ ! "$USERRESPONSE" =~ ^'[yY]{0,1}'$ ]]; then
+    if regexmatch "$USERRESPONSE" '^[^yY]{0,1}$'; then
         return 1
     fi
 }
@@ -90,13 +124,15 @@ crun() {
 cnew() {
     if checkoverwrite $1.c; then
         cp ~/.template.c $1.c
-        printf "Arquivo ${LIGHTBLUE}$1.c${NOCOLOR} criado na sua pasta!\n\n"
+        printf "Arquivo ${LIGHTBLUE}$1.c${NOCOLOR} criado na sua pasta!\n"
+        finalprint
     fi
 }
 
 ctempl() {
     cp $1 ~/.template.c
-    printf "\nConteúdo do arquivo ${LIGHTBLUE}$1${NOCOLOR} definido como o novo template de C! 🚀\n\n"
+    printf "\nConteúdo do arquivo ${LIGHTBLUE}$1${NOCOLOR} definido como o novo template de C! $SUCCESS\n"
+    finalprint
 }
 
 alias cpprun="printfeval \"g++ -std=c++11 *.cpp -o .a.out\" && out && ccheckupdate"
@@ -104,16 +140,18 @@ alias cpprun="printfeval \"g++ -std=c++11 *.cpp -o .a.out\" && out && ccheckupda
 cppnew() {
     if checkoverwrite $1.cpp; then
         cp ~/.template.cpp $1.cpp
-        printf "Arquivo ${LIGHTBLUE}$1.cpp${NOCOLOR} criado na sua pasta!\n\n"
+        printf "Arquivo ${LIGHTBLUE}$1.cpp${NOCOLOR} criado na sua pasta!\n"
+        finalprint
     fi
 }
 
 cppclass() {
     if [ -z $1 ]; then
-        printf "\nVocê deve passar o nome da classe como parâmetro.\n\n"
+        printf "\nVocê deve passar o nome da classe como parâmetro.\n"
+        finalprint
         return 1
     fi
-    printf "\nCriando a classe ${TTYBOLD}$1$TTYRESET! 🏭\n\n"
+    printf "\nCriando a classe ${TTYBOLD}$1$TTYRESET! $FACTORY\n\n"
     HIMPORTS=''
     HLOCALIMPORTS=''
     HDEFINITIONS=''
@@ -129,21 +167,21 @@ cppclass() {
     CPPGETTERS=''
     CPPSETTERS=''
     CPPMETHODS=''
-    printf -- "---- 1/3 ${TTYBOLD}ATRIBUTOS$TTYRESET 🍿 ----\n"
+    printf -- "---- 1/3 ${TTYBOLD}ATRIBUTOS$TTYRESET $POPCORN----\n"
     while true; do
         readinput "\nNome (ou ${TTYBOLD}ENTER$TTYRESET para pular):" ATTRNAME
         [ "$ATTRNAME" = '' ] && break
         ATTRVALUE=''
         ATTRNAMEAPPEND=''
         ATTRNAMEPREPEND=''
-        if [[ $ATTRNAME =~ .*' *= *'.* ]]; then
+        if regexmatch "$ATTRNAME" '.* *= *.*'; then
             ATTRVALUE=" = $(printf "$ATTRNAME" | sed -e "s/.*= *//g")"
             ATTRNAME=$(printf "$ATTRNAME" | sed -e "s/ *=.*//g")
         fi
         readinput "\nTipo (string, int, int[10] etc.):" ATTRTYPE
-        if [[ $ATTRTYPE =~ .*'string'.* && ! $HIMPORTS =~ .*'#include <string>'.* ]]; then
+        if regexmatch "$ATTRTYPE" '.*string.*' && ! regexmatch "$HIMPORTS" '.*#include <string>.*'; then
             HIMPORTS="$HIMPORTS\n#include <string>\nusing namespace std;"
-        elif [[ $ATTRTYPE =~ .*'\[.*\]'.* ]]; then
+        elif regexmatch "$ATTRTYPE" '.*\[.*\].*'; then
             ATTRMAXLENGTH=$(printf "$ATTRTYPE" | sed -e "s/.*\[//g" -e "s/\]//g")
             ATTRTYPE=$(printf "$ATTRTYPE" | sed -e "s/\[.*\]//g")
             UPPERCASE=$(printf "$ATTRNAME" | tr '[:lower:]' '[:upper:]')
@@ -151,12 +189,12 @@ cppclass() {
             ATTRNAMEAPPEND="[MAXIMO_${UPPERCASE}]"
             ATTRNAMEPREPEND="*"
         fi
-        if [[ $ATTRTYPE =~ ^[A-Z] ]]; then
+        if regexmatch "$ATTRTYPE" '^[A-Z]'; then
             HLOCALIMPORT=$(printf "$ATTRTYPE" | sed -e "s/\*//g")
-            [[ ! $HLOCALIMPORT = $1 && ! $HLOCALIMPORTS =~ .*"$HLOCALIMPORT".* ]] && HLOCALIMPORTS="$HLOCALIMPORTS\n#include \"$HLOCALIMPORT.h\"\nclass $HLOCALIMPORT;"
+            [[ ! $HLOCALIMPORT = $1 ]] && ! regexmatch "$HLOCALIMPORTS" ".*$HLOCALIMPORT.*" && HLOCALIMPORTS="$HLOCALIMPORTS\n#include \"$HLOCALIMPORT.h\"\nclass $HLOCALIMPORT;"
         fi
         CAPITALIZED=$(perl -lne 'use open qw(:std :utf8); print ucfirst' <<<$ATTRNAME)
-        if [[ ! $ATTRTYPE =~ ^'const ' ]]; then
+        if ! regexmatch "$ATTRTYPE" '^const '; then
             CONSTRUCTORPARAMS="${CONSTRUCTORPARAMS}${CONSTRUCTORCOMMA}${ATTRTYPE}$ATTRNAMEPREPEND ${ATTRNAME}"
             CONSTRUCTORCOMMA=', '
             ATTRSETTER="${ATTRNAMEPREPEND}this->$ATTRNAME = ${ATTRNAMEPREPEND}$ATTRNAME;"
@@ -169,24 +207,24 @@ cppclass() {
         HGETTERS="$HGETTERS\n    ${ATTRTYPE}$ATTRNAMEPREPEND get$CAPITALIZED();"
         CPPGETTERS="${CPPGETTERS}${ATTRTYPE}$ATTRNAMEPREPEND $1::get$CAPITALIZED() { return this->$ATTRNAME; }\n\n"
     done
-    printf "\n----- 2/3 ${TTYBOLD}MÉTODOS$TTYRESET 🔧 -----\n"
+    printf "\n----- 2/3 ${TTYBOLD}MÉTODOS$TTYRESET $WRENCH-----\n"
     while true; do
         readinput "\nNome (ou ${TTYBOLD}ENTER$TTYRESET para pular):" METHODNAME
         [ "$METHODNAME" = '' ] && break
         readinput "\nTipo de retorno (int, void etc.):" METHODTYPE
         readinput "\nLista de parâmetros (ex.: \"string nome, int contatos[]\"):" METHODPARAMS
-        if [[ ($METHODTYPE =~ .*'string'.* || $METHODPARAMS =~ .*'string'.*) && ! $HIMPORTS =~ .*'#include <string>'.* ]]; then
+        if (regexmatch "$METHODTYPE" '.*string.*' || regexmatch "$METHODPARAMS" '.*string.*') && ! regexmatch "$HIMPORTS" '.*#include <string>.*'; then
             HIMPORTS="$HIMPORTS\n#include <string>\nusing namespace std;"
         fi
         # TODO: adicionar local import se existir em METHODPARAMS
-        if [[ $METHODTYPE =~ ^[A-Z] ]]; then
+        if regexmatch "$METHODTYPE" '^[A-Z]'; then
             HLOCALIMPORT=$(printf "$METHODTYPE" | sed -e "s/\*//g")
-            [[ ! $HLOCALIMPORT = $1 && ! $HLOCALIMPORTS =~ .*"$HLOCALIMPORT".* ]] && HLOCALIMPORTS="$HLOCALIMPORTS\n#include \"$HLOCALIMPORT.h\"\nclass $HLOCALIMPORT;"
+            [[ ! $HLOCALIMPORT = $1 ]] && ! regexmatch "$HLOCALIMPORTS" ".*$HLOCALIMPORT.*" && HLOCALIMPORTS="$HLOCALIMPORTS\n#include \"$HLOCALIMPORT.h\"\nclass $HLOCALIMPORT;"
         fi
         HMETHODS="$HMETHODS\n    $METHODTYPE $METHODNAME($METHODPARAMS);"
         CPPMETHODS="${CPPMETHODS}$METHODTYPE $1::$METHODNAME($METHODPARAMS) {\n    // TODO: adicionar código\n}\n\n"
     done
-    printf "\n----- 3/3 ${TTYBOLD}CONFIGURAÇÕES$TTYRESET 🔧 -----\n"
+    printf "\n----- 3/3 ${TTYBOLD}CONFIGURAÇÕES$TTYRESET $WRENCH-----\n"
     if yesorno "\nIncluir um destrutor?"; then
         HDESTRUCTOR="~$1();"
         CPPDESTRUCTOR="$1::~$1() {\n    // TODO: adicionar lógica de liberação de memória\n}"
@@ -225,17 +263,18 @@ cppclass() {
         cat >$1.cpp <<-END
 			#include "$1.h"${CPPCONSTRUCTOR}${CPPDESTRUCTOR}${CPPGETTERS}${CPPSETTERS}${CPPMETHODS}
 		END
-        printf "Arquivos ${LIGHTBLUE}$1.h$NOCOLOR e ${LIGHTBLUE}$1.cpp$NOCOLOR criados na sua pasta! 🚀\n\n"
+        printf "Arquivos ${LIGHTBLUE}$1.h$NOCOLOR e ${LIGHTBLUE}$1.cpp$NOCOLOR criados na sua pasta! $SUCCESS\n"
+        finalprint
     fi
 }
 
 cpptempl() {
     cp $1 ~/.template.cpp
-    printf "\nConteúdo do arquivo ${LIGHTBLUE}$1${NOCOLOR} definido como o novo template de C++! 🚀\n\n"
+    printf "\nConteúdo do arquivo ${LIGHTBLUE}$1${NOCOLOR} definido como o novo template de C++! $SUCCESS\n"
+    finalprint
 }
 
 hidevscc() {
-    code -g .vscode/settings.json:4:23
     mkdir -p .vscode
     cat >.vscode/settings.json <<-END
 		{
@@ -245,6 +284,8 @@ hidevscc() {
 		    }
 		}
 	END
+    printf "\n${LIGHTBLUE}.vscode/settings.json${NOCOLOR} configurado! $SUCCESS\n"
+    finalprint
 }
 
 commentm() {
@@ -275,11 +316,12 @@ cupdate() {
         return 1
     fi
     LATESTVERSIONDESC=$(getlatestversiondata body | sed -e "s/\`/\` /g" -e "s/ \` / \\$LIGHTBLUE/g" -e "s/\` /\\$NOCOLOR/g")
-    if yesorno "\nNovidades do Better C/C++ Tools v$LATESTVERSIONNAME 🚀\n\n$LATESTVERSIONDESC\n\n${TTYBOLD}Obs.:${TTYRESET} a descrição de todas as versões está disponível em ${TTYBOLD}https://github.com/henriquefalconer/better-c-cpp-tools/releases${TTYRESET}\n\nVocê gostaria de baixar esta versão?"; then
-        printf "\n🔎  Baixando mais nova versão das funções e templates..."
+    if yesorno "\nNovidades do Better C/C++ Tools v$LATESTVERSIONNAME $ROCKET\n\n$LATESTVERSIONDESC\n\n${TTYBOLD}Obs.:${TTYRESET} a descrição de todas as versões está disponível em ${TTYBOLD}https://github.com/henriquefalconer/better-c-cpp-tools/releases${TTYRESET}\n\nVocê gostaria de baixar esta versão?"; then
+        printf "\n${SEARCHI}Baixando mais nova versão das funções e templates..."
         /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/henriquefalconer/better-c-cpp-tools/main/install.sh)" >/dev/null 2>&1
         printf " Feito!\n\n"
-        printf "ℹ️   Para utilizar a nova versão, feche este shell e abra-o novamente.\n\n"
+        printf "${INFOI}Para utilizar a nova versão, feche este shell e abra-o novamente.\n"
+        finalprint
     fi
 }
 
@@ -307,7 +349,7 @@ printcommand() {
 }
 
 chelp() {
-    printf '\nComandos para rodar programas em C/C++! 💻\n\n'
+    printf "\nComandos para rodar programas em C/C++! $COMPUTER\n\n"
     printcommand 'cnew' '[nome do arquivo]' 'gera um novo arquivo C na pasta atual, com um template inicial.'
     printcommand 'crun' '[nome do arquivo.c]' "compila e roda um código em C (use \\${TTYBOLD}TAB\\$TTYRESET para completar o nome do arquivo ao escrever na linha de comando)."
     printcommand 'cppnew' '[nome do arquivo]' 'gera um novo arquivo C++ na pasta atual, com um template inicial.'

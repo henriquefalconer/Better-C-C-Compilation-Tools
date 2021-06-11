@@ -104,8 +104,8 @@ yesorno() {
 checkoverwrite() {
     printf '\n'
     for file in $@; do
-        if [ -f $file ]; then
-            if ! yesorno "O arquivo ${LIGHTBLUE}$file${NOCOLOR} já existe. Você gostaria de sobrescrevê-lo?"; then
+        if [ -f $file ] || [ -d $file ]; then
+            if ! yesorno "O $([ -d $file ] && printf "diretório" || printf "arquivo") ${LIGHTBLUE}$file${NOCOLOR} já existe. Você gostaria de $([ -d $file ] && printf "sobrescrever os arquivos dentro dele" || printf "sobrescrevê-lo")?"; then
                 printf '\n'
                 return 1
             fi
@@ -123,14 +123,15 @@ crun() {
 
 cnew() {
     if checkoverwrite $1.c; then
-        cp ~/.template.c $1.c
-        printf "Arquivo ${LIGHTBLUE}$1.c${NOCOLOR} criado na sua pasta!\n"
+        cp ~/.ccpptemplates/template.c $1.c
+        printf "Arquivo ${LIGHTBLUE}$1.c${NOCOLOR} criado na sua pasta! $SUCCESS\n"
+        printf "Para testá-lo, rode ${LIGHTBLUE}crun $1.c${NOCOLOR}\n"
         finalprint
     fi
 }
 
 ctempl() {
-    cp $1 ~/.template.c
+    cp $1 ~/.ccpptemplates/template.c
     printf "\nConteúdo do arquivo ${LIGHTBLUE}$1${NOCOLOR} definido como o novo template de C! $SUCCESS\n"
     finalprint
 }
@@ -138,10 +139,19 @@ ctempl() {
 alias cpprun="printfeval \"g++ -std=c++11 *.cpp -o .a.out\" && out && ccheckupdate"
 
 cppnew() {
-    if checkoverwrite $1.cpp; then
-        cp ~/.template.cpp $1.cpp
-        printf "Arquivo ${LIGHTBLUE}$1.cpp${NOCOLOR} criado na sua pasta!\n"
-        finalprint
+    local createproject() {
+        if checkoverwrite $1; then
+            rm -rf $1
+            cp -r $2 $1
+            printf "O projeto ${LIGHTBLUE}$1${NOCOLOR} foi criado na sua pasta! $SUCCESS\n"
+            printf "Para acessá-lo, rode ${LIGHTBLUE}cd $1${NOCOLOR} e, para testá-lo, rode ${LIGHTBLUE}cpprun${NOCOLOR}\n"
+            finalprint
+        fi
+    }
+    if yesorno "\nIncluir ${LIGHTBLUE}iofuncs${NOCOLOR}?"; then
+        createproject $1 ~/.ccpptemplates/cpp/withio
+    else
+        createproject $1 ~/.ccpptemplates/cpp/raw
     fi
 }
 

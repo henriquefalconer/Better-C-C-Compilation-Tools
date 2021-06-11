@@ -326,7 +326,7 @@ hidevscc() {
 		    }
 		}
 	END
-    printf "\n${LIGHTBLUE}.vscode/settings.json${NOCOLOR} configurado! $SUCCESS\n"
+    printf "\n${LIGHTBLUE}.vscode/settings.json${NOCOLOR} configurado! Agora arquivos .a.out e .a.out.dSYM ficarão invisíveis no VSCode.\n"
     finalprint
 }
 

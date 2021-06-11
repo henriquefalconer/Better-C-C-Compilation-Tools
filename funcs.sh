@@ -252,7 +252,7 @@ cppclass() {
     done
     printf "\n----- 3/3 ${TTYBOLD}CONFIGURAÇÕES$TTYRESET $WRENCH-----\n"
     if yesorno "\nIncluir um destrutor?"; then
-        HDESTRUCTOR="~$1();"
+        HDESTRUCTOR="virtual ~$1();"
         CPPDESTRUCTOR="$1::~$1() {\n    // TODO: adicionar lógica de liberação de memória\n}"
     fi
     formatmultilinetr() {

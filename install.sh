@@ -17,6 +17,7 @@ NOCOLOR='\e[0m'
 TTYBOLD="\033[1;39m"
 TTYRESET="\033[1;0m"
 TEMPLATEI='📄'
+DOWNLOADI='⬇️'
 SAVEI='📀'
 SUCCESS='🎉'
 
@@ -24,6 +25,7 @@ SUCCESS='🎉'
 OS=$(uname)
 if [[ "$OS" != "Darwin" && "$OS" != "Linux" ]]; then
     TEMPLATEI='⬇️  '
+    DOWNLOADI='⬇️ '
     SAVEI='⬇️  '
     SUCCESS='✔️  '
 fi
@@ -56,7 +58,7 @@ clearold() {
 
 # Realiza o curl para obter código.
 savefuncs() {
-    printf "2/3 ⬇️  Baixando novos comandos de C/C++..."
+    printf "2/3 $DOWNLOADI  Baixando novos comandos de C/C++..."
     clearold $1
     curl -fsSL https://raw.githubusercontent.com/henriquefalconer/better-c-cpp-tools/main/funcs.sh >>$1
     printf " Feito!\n\n"

@@ -354,8 +354,10 @@ cppzip() {
     fi
     QUANTITY=0
     for f in *.cpp *.h; do
-        cppzipsinglefile $f files $CCOMMENTMAIN
-        QUANTITY=$(($QUANTITY+1))
+        if ! regexmatch "$f" '^\*'; then
+            cppzipsinglefile $f files $CCOMMENTMAIN
+            QUANTITY=$(($QUANTITY+1))
+        fi
     done
     printf "\n$QUANTITY arquivos comprimidos e salvos em ${LIGHTBLUE}files.zip${NOCOLOR}!\n\n"
 }

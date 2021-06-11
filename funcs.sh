@@ -359,7 +359,8 @@ cppzip() {
             QUANTITY=$(($QUANTITY+1))
         fi
     done
-    printf "\n$QUANTITY arquivos comprimidos e salvos em ${LIGHTBLUE}files.zip${NOCOLOR}!\n\n"
+    printf "\n$QUANTITY arquivos comprimidos e salvos em ${LIGHTBLUE}files.zip${NOCOLOR}!\n"
+    finalprint
 }
 
 cupdate() {

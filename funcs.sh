@@ -157,7 +157,7 @@ cppnew() {
     if checkparam "$1" "Você deve passar o nome do projeto como parâmetro."; then
         return 1
     fi
-    local createproject() {
+    createproject() {
         if checkoverwrite $1; then
             rm -rf $1
             cp -r $2 $1

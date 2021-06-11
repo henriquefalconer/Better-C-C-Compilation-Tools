@@ -73,6 +73,12 @@ if [[ "$SHELL" == "/bin/zsh" ]]; then
     savefuncs ~/.zshenv
 else
     savefuncs ~/.bashrc
+    if [ ! -f ~/.bash_profile ]; then
+        cat >~/.bash_profile <<-END
+			test -f ~/.profile && . ~/.profile
+			test -f ~/.bashrc && . ~/.bashrc
+		END
+    fi
 fi
 
 # Aguarda input do usuário para mostrar novos comandos.

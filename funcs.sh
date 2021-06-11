@@ -13,6 +13,13 @@ TTYBOLD='\033[1;39m'
 TTYRESET='\033[1;0m'
 LINEBREAK='⮑  '
 FINALLINEBREAK='\n'
+SUCCESS='🚀'
+ROCKET='🚀'
+FACTORY='🏭'
+POPCORN='🍿 '
+WRENCH='🔧 '
+SEARCHI='🔎  '
+INFOI='ℹ️  '
 
 # Se o sistema for Linux, remover caractere unicode.
 OS=$(uname)
@@ -20,9 +27,16 @@ if [[ $OS == 'Linux' ]]; then
     LINEBREAK=''
 fi
 
-# Se o sistema for Windows, não imprimir quebra de linha final.
+# Se o sistema for Windows, utilizar emojis compatíveis e remover quebra de linha final.
 if [[ "$OS" != "Darwin" && "$OS" != "Linux" ]]; then
     FINALLINEBREAK=''
+    SUCCESS='✔️'
+    ROCKET=''
+    FACTORY=''
+    POPCORN=''
+    WRENCH=''
+    SEARCHI=''
+    INFOI='❕ '
 fi
 
 finalprint() {
@@ -54,7 +68,7 @@ ccheckupdate() {
     crefreshversions
     if [ $CREFRESHFAILED = false ]; then
         if [ "$LATESTVERSIONNAME" != "$BETTERCCPPVERS" ]; then
-            printf "\n${TTYBOLD}Better C/C++ Tools v${LATESTVERSIONNAME}$TTYRESET já está disponível! Rode ${LIGHTBLUE}cupdate$1$NOCOLOR para visualizar as novas funcionalidades 🚀\n"
+            printf "\n${TTYBOLD}Better C/C++ Tools v${LATESTVERSIONNAME}$TTYRESET já está disponível! Rode ${LIGHTBLUE}cupdate$1$NOCOLOR para visualizar as novas funcionalidades $ROCKET\n"
             finalprint
         fi
     fi
@@ -115,7 +129,7 @@ cnew() {
 
 ctempl() {
     cp $1 ~/.template.c
-    printf "\nConteúdo do arquivo ${LIGHTBLUE}$1${NOCOLOR} definido como o novo template de C! 🚀\n"
+    printf "\nConteúdo do arquivo ${LIGHTBLUE}$1${NOCOLOR} definido como o novo template de C! $SUCCESS\n"
     finalprint
 }
 
@@ -135,7 +149,7 @@ cppclass() {
         finalprint
         return 1
     fi
-    printf "\nCriando a classe ${TTYBOLD}$1$TTYRESET! 🏭\n\n"
+    printf "\nCriando a classe ${TTYBOLD}$1$TTYRESET! $FACTORY\n\n"
     HIMPORTS=''
     HLOCALIMPORTS=''
     HDEFINITIONS=''
@@ -151,7 +165,7 @@ cppclass() {
     CPPGETTERS=''
     CPPSETTERS=''
     CPPMETHODS=''
-    printf -- "---- 1/3 ${TTYBOLD}ATRIBUTOS$TTYRESET 🍿 ----\n"
+    printf -- "---- 1/3 ${TTYBOLD}ATRIBUTOS$TTYRESET $POPCORN----\n"
     while true; do
         readinput "\nNome (ou ${TTYBOLD}ENTER$TTYRESET para pular):" ATTRNAME
         [ "$ATTRNAME" = '' ] && break
@@ -191,7 +205,7 @@ cppclass() {
         HGETTERS="$HGETTERS\n    ${ATTRTYPE}$ATTRNAMEPREPEND get$CAPITALIZED();"
         CPPGETTERS="${CPPGETTERS}${ATTRTYPE}$ATTRNAMEPREPEND $1::get$CAPITALIZED() { return this->$ATTRNAME; }\n\n"
     done
-    printf "\n----- 2/3 ${TTYBOLD}MÉTODOS$TTYRESET 🔧 -----\n"
+    printf "\n----- 2/3 ${TTYBOLD}MÉTODOS$TTYRESET $WRENCH-----\n"
     while true; do
         readinput "\nNome (ou ${TTYBOLD}ENTER$TTYRESET para pular):" METHODNAME
         [ "$METHODNAME" = '' ] && break
@@ -208,7 +222,7 @@ cppclass() {
         HMETHODS="$HMETHODS\n    $METHODTYPE $METHODNAME($METHODPARAMS);"
         CPPMETHODS="${CPPMETHODS}$METHODTYPE $1::$METHODNAME($METHODPARAMS) {\n    // TODO: adicionar código\n}\n\n"
     done
-    printf "\n----- 3/3 ${TTYBOLD}CONFIGURAÇÕES$TTYRESET 🔧 -----\n"
+    printf "\n----- 3/3 ${TTYBOLD}CONFIGURAÇÕES$TTYRESET $WRENCH-----\n"
     if yesorno "\nIncluir um destrutor?"; then
         HDESTRUCTOR="~$1();"
         CPPDESTRUCTOR="$1::~$1() {\n    // TODO: adicionar lógica de liberação de memória\n}"
@@ -247,14 +261,14 @@ cppclass() {
         cat >$1.cpp <<-END
 			#include "$1.h"${CPPCONSTRUCTOR}${CPPDESTRUCTOR}${CPPGETTERS}${CPPSETTERS}${CPPMETHODS}
 		END
-        printf "Arquivos ${LIGHTBLUE}$1.h$NOCOLOR e ${LIGHTBLUE}$1.cpp$NOCOLOR criados na sua pasta! 🚀\n"
+        printf "Arquivos ${LIGHTBLUE}$1.h$NOCOLOR e ${LIGHTBLUE}$1.cpp$NOCOLOR criados na sua pasta! $SUCCESS\n"
         finalprint
     fi
 }
 
 cpptempl() {
     cp $1 ~/.template.cpp
-    printf "\nConteúdo do arquivo ${LIGHTBLUE}$1${NOCOLOR} definido como o novo template de C++! 🚀\n"
+    printf "\nConteúdo do arquivo ${LIGHTBLUE}$1${NOCOLOR} definido como o novo template de C++! $SUCCESS\n"
     finalprint
 }
 
@@ -268,7 +282,7 @@ hidevscc() {
 		    }
 		}
 	END
-    printf "\n${LIGHTBLUE}.vscode/settings.json${NOCOLOR} configurado! 🚀\n"
+    printf "\n${LIGHTBLUE}.vscode/settings.json${NOCOLOR} configurado! $SUCCESS\n"
     finalprint
 }
 
@@ -300,11 +314,11 @@ cupdate() {
         return 1
     fi
     LATESTVERSIONDESC=$(getlatestversiondata body | sed -e "s/\`/\` /g" -e "s/ \` / \\$LIGHTBLUE/g" -e "s/\` /\\$NOCOLOR/g")
-    if yesorno "\nNovidades do Better C/C++ Tools v$LATESTVERSIONNAME 🚀\n\n$LATESTVERSIONDESC\n\n${TTYBOLD}Obs.:${TTYRESET} a descrição de todas as versões está disponível em ${TTYBOLD}https://github.com/henriquefalconer/better-c-cpp-tools/releases${TTYRESET}\n\nVocê gostaria de baixar esta versão?"; then
-        printf "\n🔎  Baixando mais nova versão das funções e templates..."
+    if yesorno "\nNovidades do Better C/C++ Tools v$LATESTVERSIONNAME $ROCKET\n\n$LATESTVERSIONDESC\n\n${TTYBOLD}Obs.:${TTYRESET} a descrição de todas as versões está disponível em ${TTYBOLD}https://github.com/henriquefalconer/better-c-cpp-tools/releases${TTYRESET}\n\nVocê gostaria de baixar esta versão?"; then
+        printf "\n${SEARCHI}Baixando mais nova versão das funções e templates..."
         /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/henriquefalconer/better-c-cpp-tools/main/install.sh)" >/dev/null 2>&1
         printf " Feito!\n\n"
-        printf "ℹ️   Para utilizar a nova versão, feche este shell e abra-o novamente.\n"
+        printf "${INFOI}Para utilizar a nova versão, feche este shell e abra-o novamente.\n"
         finalprint
     fi
 }

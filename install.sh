@@ -16,6 +16,16 @@ GREEN='\e[32m'
 NOCOLOR='\e[0m'
 TTYBOLD="\033[1;39m"
 TTYRESET="\033[1;0m"
+TEMPLATEI='📄'
+SAVEI='📀'
+SUCCESS='🎉'
+
+# Se o sistema for Windows, utilizar emojis compatíveis.
+if [[ "$OS" != "Darwin" && "$OS" != "Linux" ]]; then
+    TEMPLATEI='⬇️  '
+    SAVEI='⬇️  '
+    SUCCESS='✔️  '
+fi
 
 # Obtém o valor que corresponde com a chave passada do JSON de informações da última versão do projeto.
 getlatestversiondata() {
@@ -32,7 +42,7 @@ if [ -z "$LATESTVERSIONNAME" ]; then
 fi
 
 # Realiza o curl para obter os templates.
-printf "1/3 📄 Baixando templates de C/C++..."
+printf "1/3 $TEMPLATEI Baixando templates de C/C++..."
 curl -fsSL https://raw.githubusercontent.com/henriquefalconer/better-c-cpp-tools/main/templates/template.c >~/.template.c
 curl -fsSL https://raw.githubusercontent.com/henriquefalconer/better-c-cpp-tools/main/templates/template.cpp >~/.template.cpp
 printf " Feito!\n\n"
@@ -49,7 +59,7 @@ savefuncs() {
     clearold $1
     curl -fsSL https://raw.githubusercontent.com/henriquefalconer/better-c-cpp-tools/main/funcs.sh >>$1
     printf " Feito!\n\n"
-    printf "3/3 📀 Salvando-os em ${LIGHTBLUE}$1${NOCOLOR}..."
+    printf "3/3 $SAVEI Salvando-os em ${LIGHTBLUE}$1${NOCOLOR}..."
     sed -i -e "s/BETTERCCPPVERS='X.X.X'/BETTERCCPPVERS='$LATESTVERSIONNAME'/g" $1
     printf " Salvos!\n\n"
 }
@@ -62,4 +72,4 @@ else
 fi
 
 # Aguarda input do usuário para mostrar novos comandos.
-printf "🎉 Configuração feita! para começar a utilizar, feche este shell, abra-o novamente e rode ${LIGHTBLUE}chelp${NOCOLOR}."
+printf "$SUCCESS Configuração feita! para começar a utilizar, feche este shell, abra-o novamente e rode ${LIGHTBLUE}chelp${NOCOLOR}."

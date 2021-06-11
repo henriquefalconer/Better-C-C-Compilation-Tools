@@ -46,8 +46,12 @@ fi
 
 # Realiza o curl para obter os templates.
 printf "1/3 $TEMPLATEI Baixando templates de C/C++..."
-curl -fsSL https://raw.githubusercontent.com/henriquefalconer/better-c-cpp-tools/main/templates/template.c >~/.template.c
-curl -fsSL https://raw.githubusercontent.com/henriquefalconer/better-c-cpp-tools/main/templates/template.cpp >~/.template.cpp
+mkdir -p ~/.ccpptemplates/cpp/raw
+mkdir -p ~/.ccpptemplates/cpp/withio
+curl -fsSL https://raw.githubusercontent.com/henriquefalconer/better-c-cpp-tools/main/templates/template.c >~/.ccpptemplates/template.c
+curl -fsSL https://raw.githubusercontent.com/henriquefalconer/better-c-cpp-tools/main/templates/cpp/raw/main.cpp >~/.ccpptemplates/cpp/raw/main.cpp
+curl -fsSL https://raw.githubusercontent.com/henriquefalconer/better-c-cpp-tools/main/templates/cpp/withio/iofuncs.h >~/.ccpptemplates/cpp/withio/iofuncs.h
+curl -fsSL https://raw.githubusercontent.com/henriquefalconer/better-c-cpp-tools/main/templates/cpp/withio/main.cpp >~/.ccpptemplates/cpp/withio/main.cpp
 printf " Feito!\n\n"
 
 clearold() {

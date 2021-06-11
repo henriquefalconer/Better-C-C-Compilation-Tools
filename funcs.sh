@@ -104,14 +104,23 @@ yesorno() {
 checkoverwrite() {
     printf '\n'
     for file in $@; do
-        if [ -f $file ]; then
-            if ! yesorno "O arquivo ${LIGHTBLUE}$file${NOCOLOR} já existe. Você gostaria de sobrescrevê-lo?"; then
+        if [ -f $file ] || [ -d $file ]; then
+            if ! yesorno "O $([ -d $file ] && printf "diretório" || printf "arquivo") ${LIGHTBLUE}$file${NOCOLOR} já existe. Você gostaria de $([ -d $file ] && printf "sobrescrever os arquivos dentro dele" || printf "sobrescrevê-lo")?"; then
                 printf '\n'
                 return 1
             fi
             printf '\n'
         fi
     done
+}
+
+checkparam() {
+    if [ -z $1 ]; then
+        printf "\n$2\n"
+        finalprint
+        return 0
+    fi
+    return 1
 }
 
 alias out='printfeval ./.a.out'
@@ -122,15 +131,22 @@ crun() {
 }
 
 cnew() {
+    if checkparam "$1" "Você deve passar o nome do arquivo como parâmetro."; then
+        return 1
+    fi
     if checkoverwrite $1.c; then
-        cp ~/.template.c $1.c
-        printf "Arquivo ${LIGHTBLUE}$1.c${NOCOLOR} criado na sua pasta!\n"
+        cp ~/.ccpptemplates/template.c $1.c
+        printf "Arquivo ${LIGHTBLUE}$1.c${NOCOLOR} criado na sua pasta! $SUCCESS\n"
+        printf "Para testá-lo, rode ${LIGHTBLUE}crun $1.c${NOCOLOR}\n"
         finalprint
     fi
 }
 
 ctempl() {
-    cp $1 ~/.template.c
+    if checkparam "$1" "Você deve passar o nome do arquivo como parâmetro."; then
+        return 1
+    fi
+    cp $1 ~/.ccpptemplates/template.c
     printf "\nConteúdo do arquivo ${LIGHTBLUE}$1${NOCOLOR} definido como o novo template de C! $SUCCESS\n"
     finalprint
 }
@@ -138,17 +154,27 @@ ctempl() {
 alias cpprun="printfeval \"g++ -std=c++11 *.cpp -o .a.out\" && out && ccheckupdate"
 
 cppnew() {
-    if checkoverwrite $1.cpp; then
-        cp ~/.template.cpp $1.cpp
-        printf "Arquivo ${LIGHTBLUE}$1.cpp${NOCOLOR} criado na sua pasta!\n"
-        finalprint
+    if checkparam "$1" "Você deve passar o nome do projeto como parâmetro."; then
+        return 1
+    fi
+    local createproject() {
+        if checkoverwrite $1; then
+            rm -rf $1
+            cp -r $2 $1
+            printf "O projeto ${LIGHTBLUE}$1${NOCOLOR} foi criado na sua pasta! $SUCCESS\n"
+            printf "Para acessá-lo, rode ${LIGHTBLUE}cd $1${NOCOLOR} e, para testá-lo, rode ${LIGHTBLUE}cpprun${NOCOLOR}\n"
+            finalprint
+        fi
+    }
+    if yesorno "\nIncluir ${LIGHTBLUE}iofuncs${NOCOLOR}?"; then
+        createproject $1 ~/.ccpptemplates/cpp/withio
+    else
+        createproject $1 ~/.ccpptemplates/cpp/raw
     fi
 }
 
 cppclass() {
-    if [ -z $1 ]; then
-        printf "\nVocê deve passar o nome da classe como parâmetro.\n"
-        finalprint
+    if checkparam "$1" "Você deve passar o nome da classe como parâmetro."; then
         return 1
     fi
     printf "\nCriando a classe ${TTYBOLD}$1$TTYRESET! $FACTORY\n\n"
@@ -268,12 +294,6 @@ cppclass() {
     fi
 }
 
-cpptempl() {
-    cp $1 ~/.template.cpp
-    printf "\nConteúdo do arquivo ${LIGHTBLUE}$1${NOCOLOR} definido como o novo template de C++! $SUCCESS\n"
-    finalprint
-}
-
 hidevscc() {
     mkdir -p .vscode
     cat >.vscode/settings.json <<-END
@@ -352,12 +372,11 @@ chelp() {
     printf "\nComandos para rodar programas em C/C++! $COMPUTER\n\n"
     printcommand 'cnew' '[nome do arquivo]' 'gera um novo arquivo C na pasta atual, com um template inicial.'
     printcommand 'crun' '[nome do arquivo.c]' "compila e roda um código em C (use \\${TTYBOLD}TAB\\$TTYRESET para completar o nome do arquivo ao escrever na linha de comando)."
-    printcommand 'cppnew' '[nome do arquivo]' 'gera um novo arquivo C++ na pasta atual, com um template inicial.'
+    printcommand 'cppnew' '[nome do projeto]' 'gera um novo projeto de C++ na pasta atual, com um template inicial.'
     printcommand 'cppclass' '[nome da classe]' "gera um par de arquivos .h e .cpp na pasta atual, a partir das informações dadas na linha de comando, além de automaticamente criar setters e getters para todos os atributos. \\$GREEN(Novo!)\\$NOCOLOR"
     printcommand 'cpprun' '' "compila todos os arquivos C++ da pasta atual, rodando a função main. Deve ser rodado na pasta do projeto. \\${TTYBOLD}IMPORTANTE:\\$TTYRESET se a pasta atual possuir mais de um projeto, ocorrerá um erro."
     printcommand 'out' '' "roda o último código em C/C++ compilado com \\${LIGHTBLUE}crun\\$NOCOLOR ou \\${LIGHTBLUE}cpprun\\$NOCOLOR na pasta atual."
     printcommand 'ctempl' '[nome do arquivo.c]' 'redefine o template inicial para arquivos C.'
-    printcommand 'cpptempl' '[nome do arquivo.cpp]' 'redefine o template inicial para arquivos C++.'
     printcommand 'cppzip' '[nome do arquivo.cpp]' "comenta o main do arquivo passado e cria \\${TTYBOLD}files.zip\\$TTYRESET com todos os arquivos .h e .cpp da pasta. \\${TTYBOLD}IMPORTANTE:\\$TTYRESET deve ser rodado na mesma pasta do arquivo passado como parâmetro."
     printcommand 'hidevscc' '' 'caso esteja usando VS Code, este comando torna invisíveis os arquivos de compilação para não poluir a área de trabalho.'
     printcommand 'cupdate' '' "baixa e atualiza o \\${TTYBOLD}Better C/C++ Tools\\$TTYRESET para a última versão disponível."

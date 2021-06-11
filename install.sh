@@ -21,6 +21,7 @@ SAVEI='📀'
 SUCCESS='🎉'
 
 # Se o sistema for Windows, utilizar emojis compatíveis.
+OS=$(uname)
 if [[ "$OS" != "Darwin" && "$OS" != "Linux" ]]; then
     TEMPLATEI='⬇️  '
     SAVEI='⬇️  '

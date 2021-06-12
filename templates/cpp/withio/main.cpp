@@ -1,14 +1,13 @@
 #include "iofuncs.h"
 
-void exercicio() {
-    string nome = input("Digite seu nome: ");
-    int repeticoes = input<int>("Digite um numero: ", '\n');
+void teste() {
+    int number = input<int>("Quanto vale 1 + 1? ");
+    string nome = input("Digite seu nome: ", '\n');
 
-    for (int i = 0; i < repeticoes; i++)
-        print("Ola ", nome, ' ', i + 1);
+    print("Segundo o ", nome, ", 1 + 1 = ", number);
 }
 
 int main() {
-    exercicio();
+    teste();
     return 0;
 }

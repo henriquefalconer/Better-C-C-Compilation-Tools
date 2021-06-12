@@ -21,7 +21,7 @@ inline void print(Args... args) {
 
 // Lê o texto digitado na entrada padrão, retornando-o por padrão em forma de string.
 // Obs.: Para retornar uma variável cujo tipo que não é string, especificar no argumento de template: int i = input<int>();
-// Opcionalmente, também imprime um texto antes da leitura, assim como outro texto após a leitura.
+// Opcionalmente, também imprime um texto após a leitura, tal como uma quebra de linha.
 template <typename T = string, typename U = string, typename V = string>
 inline T input(U textbefore = "", V textafter = "") {
     T t;
@@ -32,7 +32,7 @@ inline T input(U textbefore = "", V textafter = "") {
 }
 
 // Lê o texto digitado na entrada padrão, retornando true se for igual a "s" ou "", e false caso contrário.
-// Opcionalmente, também imprime um texto antes da leitura, assim como outro texto após a leitura.
+// Opcionalmente, também imprime um texto após a leitura, tal como uma quebra de linha.
 template <typename U = string, typename V = string>
 inline bool simounao(U textbefore = "", V textafter = "") {
     string escolha = input(textbefore, textafter);

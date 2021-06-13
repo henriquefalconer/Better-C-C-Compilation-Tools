@@ -22,12 +22,6 @@ SEARCHI='🔎  '
 INFOI='ℹ️  '
 COMPUTER='💻'
 
-# Se o sistema for Linux ou Windows, remover caractere unicode.
-OS=$(uname)
-if [[ $OS != 'Darwin' ]]; then
-    LINEBREAK=''
-fi
-
 # Se o sistema for Windows, utilizar emojis compatíveis e remover quebra de linha final.
 if [[ "$OS" != "Darwin" && "$OS" != "Linux" ]]; then
     FINALLINEBREAK=''
@@ -386,28 +380,19 @@ cupdate() {
     fi
 }
 
-printcommand() {
-    # Nome do comando e seus argumentos.
-    NAME="${GREEN}$1 ${LIGHTBLUE}$2${NOCOLOR}"
-    # Indentação das descrições.
-    TABSNO=4
-    FAKETAB="        "
-    FAKETABS=$(printf "$FAKETAB%.0s" $(seq 1 $TABSNO))
-    REALNAMESIZE=$((${#1} + ${#2} + 1))
-    # Quantidade de caracteres por linha que o fmt deveria imprimir.
-    AVAILABLECOL=$((COLUMNS - ${#FAKETABS} - ${#LINEBREAK}))
-    # Formatação da descrição de modo a não ter quebras de linha em palavras.
-    DESC=$(printf "\n$3" | fmt -w $AVAILABLECOL)
-    # Remoção da indentação da primeira linha da descrição e
-    # prepararação para a junção com o nome e seus argumentos.
-    DESC=$(echo "$DESC" | sed -e ':a' -e 'N' -e '$!ba' -e "s/\n/\n$FAKETABS/g")
-    DESC=${DESC:$REALNAMESIZE+1}
-    # Inserção do caractere de quebra de linha em todas as linhas
-    # menos a primeira.
-    DESC=$(echo "$DESC" | sed "s/$FAKETABS/${FAKETABS}$LINEBREAK/g")
-    # Junção com o nome e seus argumentos.
-    printf "${NAME}$DESC\n\n"
-}
+TABSNO=4
+
+if [ $OS = 'Darwin' ]; then
+    FAKETABS=$(printf "        %.0s" $(seq 1 $TABSNO))
+    printcommand() {
+        printf "${GREEN}$1 ${LIGHTBLUE}$2${NOCOLOR}$(sed "s/$FAKETABS/${FAKETABS}$LINEBREAK/g" <(printf "${"$(fmt -w $((COLUMNS - ${#FAKETABS} - ${#LINEBREAK})) <(printf "\n$3") | sed "s/\n/\n$FAKETABS/g")":${#1} + ${#2} + 2}"))\n\n"
+    }
+else
+    REALTABS=$(printf "	%.0s" $(seq 1 $TABSNO))
+    printcommand() {
+        printf "${GREEN}$1 ${LIGHTBLUE}$2${NOCOLOR}${"$(fmt -w $COLUMNS <(printf "${REALTABS}$3"))":(${#1} + ${#2} + 1) / 8}\n\n"
+    }
+fi
 
 chelp() {
     printf "\nComandos para rodar programas em C/C++! $COMPUTER\n\n"

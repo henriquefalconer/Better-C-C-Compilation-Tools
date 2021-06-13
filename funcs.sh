@@ -353,11 +353,7 @@ cppzip() {
         cppzipsinglefile $f files $CCOMMENTMAIN
         QUANTITY=$(($QUANTITY+1))
     done
-    if [ $QUANTITY = 1 ]; then
-        printf "\n$QUANTITY arquivo comprimido e salvo em ${LIGHTBLUE}files.zip${NOCOLOR}!\n"
-    else
-        printf "\n$QUANTITY arquivos comprimidos e salvos em ${LIGHTBLUE}files.zip${NOCOLOR}!\n"
-    fi
+    printf "\n$QUANTITY $([ $QUANTITY = 1 ] && printf 'arquivo comprimido e salvo' || printf 'arquivos comprimidos e salvos') em ${LIGHTBLUE}files.zip${NOCOLOR}!\n"
     finalprint
 }
 

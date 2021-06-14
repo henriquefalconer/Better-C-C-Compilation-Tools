@@ -1,4 +1,5 @@
 
+
 # ------ Start of Better C/C++ Tools ------
 
 BETTERCCPPVERS='X.X.X'
@@ -374,7 +375,7 @@ TABSNO=4
 if [ $OS = 'Darwin' ]; then
     FAKETABS=$(printf "        %.0s" $(seq 1 $TABSNO))
     printcommand() {
-        printf "${GREEN}$1 ${LIGHTBLUE}$2${NOCOLOR}$(sed "s/$FAKETABS/${FAKETABS}$LINEBREAK/g" <(printf "${"$(fmt -w $((COLUMNS - ${#FAKETABS} - ${#LINEBREAK})) <(printf "\n$3") | sed "s/\n/\n$FAKETABS/g")":${#1} + ${#2} + 2}"))\n\n"
+        printf "${GREEN}$1 ${LIGHTBLUE}$2${NOCOLOR}$(printf "${"$(printf "\n$3" | fmt -w $((COLUMNS - ${#FAKETABS} - ${#LINEBREAK})) | sed -e ':a' -e 'N' -e '$!ba' -e "s/\n/\n$FAKETABS/g")":${#1} + ${#2} + 2}" | sed "s/$FAKETABS/${FAKETABS}$LINEBREAK/g")\n\n"
     }
 else
     REALTABS=$(printf "	%.0s" $(seq 1 $TABSNO))

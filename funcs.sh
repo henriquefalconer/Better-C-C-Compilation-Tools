@@ -386,7 +386,8 @@ if [ $OS = 'Darwin' ]; then
 else
     REALTABS=$(printf "	%.0s" $(seq 1 $TABSNO))
     printcommand() {
-        printf "${GREEN}$1 ${LIGHTBLUE}$2${NOCOLOR}${"$(fmt -w $COLUMNS <(printf "${REALTABS}$3"))":(${#1} + ${#2} + 1) / 8}\n\n"
+        DESC=$(printf "${REALTABS}$3" | fmt -w $COLUMNS)
+        printf "${GREEN}$1 ${LIGHTBLUE}$2${NOCOLOR}${DESC:(${#1} + ${#2} + 1) / 8}\n\n"
     }
 fi
 

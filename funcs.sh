@@ -1,5 +1,4 @@
 
-
 # ------ Start of Better C/C++ Tools ------
 
 BETTERCCPPVERS='X.X.X'

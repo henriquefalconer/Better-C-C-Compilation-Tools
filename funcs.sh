@@ -22,23 +22,10 @@ SEARCHI='🔎  '
 INFOI='ℹ️  '
 COMPUTER='💻'
 
-# Se o sistema for Linux ou Windows, remover caractere unicode.
 OS=$(uname)
-if [[ $OS != 'Darwin' ]]; then
-    LINEBREAK=''
-fi
-
-# Se o sistema for Windows, utilizar emojis compatíveis e remover quebra de linha final.
+# Se o sistema for Windows, remover quebra de linha final.
 if [[ "$OS" != "Darwin" && "$OS" != "Linux" ]]; then
     FINALLINEBREAK=''
-    SUCCESS='✔️'
-    ROCKET=''
-    FACTORY=''
-    POPCORN=''
-    WRENCH=''
-    SEARCHI=''
-    INFOI='❕ '
-    COMPUTER=''
 fi
 
 finalprint() {
@@ -104,8 +91,8 @@ yesorno() {
 checkoverwrite() {
     printf '\n'
     for file in $@; do
-        if [ -f $file ] || [ -d $file ]; then
-            if ! yesorno "O $([ -d $file ] && printf "diretório" || printf "arquivo") ${LIGHTBLUE}$file${NOCOLOR} já existe. Você gostaria de $([ -d $file ] && printf "sobrescrever os arquivos dentro dele" || printf "sobrescrevê-lo")?"; then
+        if [ -f "$file" ] || [ -d "$file" ]; then
+            if ! yesorno "O $([ -d "$file" ] && printf "diretório" || printf "arquivo") ${LIGHTBLUE}$file${NOCOLOR} já existe. Você gostaria de $([ -d "$file" ] && printf "sobrescrever os arquivos dentro dele" || printf "sobrescrevê-lo")?"; then
                 printf '\n'
                 return 1
             fi
@@ -115,7 +102,7 @@ checkoverwrite() {
 }
 
 checkparam() {
-    if [ -z $1 ]; then
+    if [ -z "$1" ]; then
         printf "\n$2\n"
         finalprint
         return 0
@@ -134,8 +121,8 @@ cnew() {
     if checkparam "$1" "Você deve passar o nome do arquivo como parâmetro."; then
         return 1
     fi
-    if checkoverwrite $1.c; then
-        cp ~/.ccpptemplates/template.c $1.c
+    if checkoverwrite "$1.c"; then
+        cp "$HOME/.ccpptemplates/template.c" "$1.c"
         printf "Arquivo ${LIGHTBLUE}$1.c${NOCOLOR} criado na sua pasta! $SUCCESS\n"
         printf "Para testá-lo, rode ${LIGHTBLUE}crun $1.c${NOCOLOR}\n"
         finalprint
@@ -146,7 +133,7 @@ ctempl() {
     if checkparam "$1" "Você deve passar o nome do arquivo como parâmetro."; then
         return 1
     fi
-    cp $1 ~/.ccpptemplates/template.c
+    cp "$1" "$HOME/.ccpptemplates/template.c"
     printf "\nConteúdo do arquivo ${LIGHTBLUE}$1${NOCOLOR} definido como o novo template de C! $SUCCESS\n"
     finalprint
 }
@@ -158,18 +145,18 @@ cppnew() {
         return 1
     fi
     createproject() {
-        if checkoverwrite $1; then
-            rm -rf $1
-            cp -r $2 $1
+        if checkoverwrite "$1"; then
+            rm -rf "$1"
+            cp -r "$2" "$1"
             printf "O projeto ${LIGHTBLUE}$1${NOCOLOR} foi criado na sua pasta! $SUCCESS\n"
             printf "Para acessá-lo, rode ${LIGHTBLUE}cd $1${NOCOLOR} e, para testá-lo, rode ${LIGHTBLUE}cpprun${NOCOLOR}\n"
             finalprint
         fi
     }
     if yesorno "\nGostaria de incluir o ${LIGHTBLUE}iofuncs${NOCOLOR}? (funções como print, input etc.)"; then
-        createproject $1 ~/.ccpptemplates/cpp/withio
+        createproject "$1" "$HOME/.ccpptemplates/cpp/withio"
     else
-        createproject $1 ~/.ccpptemplates/cpp/raw
+        createproject "$1" "$HOME/.ccpptemplates/cpp/raw"
     fi
 }
 
@@ -295,8 +282,8 @@ cppclass() {
     CPPSETTERS=$(formatmultilinetr "$CPPSETTERS" '\n\n// Setters\n')
     CPPMETHODS=$(formatmultilinetr "$CPPMETHODS" '\n\n// Methods\n')
     UPPERCASE=$(printf "$1" | tr '[:lower:]' '[:upper:]')
-    if checkoverwrite $1.h $1.cpp; then
-        cat >$1.h <<-END
+    if checkoverwrite "$1.h" "$1.cpp"; then
+        cat >"$1.h" <<-END
 			#ifndef ${UPPERCASE}_H
 			#define ${UPPERCASE}_H${HIMPORTS}${HLOCALIMPORTS}${HPARENTIMPORTS}${HDEFINITIONS}
 			
@@ -308,7 +295,7 @@ cppclass() {
 			
 			#endif  // ${UPPERCASE}_H
 		END
-        cat >$1.cpp <<-END
+        cat >"$1.cpp" <<-END
 			#include "$1.h"${CPPCONSTRUCTOR}${CPPDESTRUCTOR}${CPPGETTERS}${CPPSETTERS}${CPPMETHODS}
 		END
         printf "Arquivos ${LIGHTBLUE}$1.h$NOCOLOR e ${LIGHTBLUE}$1.cpp$NOCOLOR criados na sua pasta! $SUCCESS\n"
@@ -333,16 +320,16 @@ hidevscc() {
 cppzipsinglefile() {
     if [ $3 = true ]; then
         awk 'BEGIN{ brackets=999 } /int main()/{ print "/*"; brackets=0 } /\{/{ brackets++ } /\}/{ brackets-- } brackets==0{ print "}\n*/"; stop=1; brackets=999 } stop==0{print}' $1 >tmp
-        if ! diff $1 tmp >> /dev/null; then
+        if ! diff "$1" tmp >> /dev/null; then
             printf "Função main encontrada em ${LIGHTBLUE}$1${NOCOLOR}\n"
         fi
-        cp $1 $1.tmp
-        cp tmp $1
-        zip $2 $1 >> /dev/null
-        cp $1.tmp $1
-        rm tmp $1.tmp
+        cp "$1" "$1.tmp"
+        cp tmp "$1"
+        zip "$2" "$1" >> /dev/null
+        cp "$1.tmp" "$1"
+        rm tmp "$1.tmp"
     else
-        zip $2 $1 >> /dev/null
+        zip "$2" "$1" >> /dev/null
     fi
 }
 
@@ -356,14 +343,10 @@ cppzip() {
     [ $SHELL = '/bin/zsh' ] && setopt +o nomatch || shopt -s nullglob
     for f in *.{cpp,h}; do
         regexmatch "$f" '^\*' && continue
-        cppzipsinglefile $f files $CCOMMENTMAIN
+        cppzipsinglefile "$f" files $CCOMMENTMAIN
         QUANTITY=$(($QUANTITY+1))
     done
-    if [ $QUANTITY = 1 ]; then
-        printf "\n$QUANTITY arquivo comprimido e salvo em ${LIGHTBLUE}files.zip${NOCOLOR}!\n"
-    else
-        printf "\n$QUANTITY arquivos comprimidos e salvos em ${LIGHTBLUE}files.zip${NOCOLOR}!\n"
-    fi
+    printf "\n$QUANTITY $([ $QUANTITY = 1 ] && printf 'arquivo comprimido e salvo' || printf 'arquivos comprimidos e salvos') em ${LIGHTBLUE}files.zip${NOCOLOR}!\n"
     finalprint
 }
 
@@ -386,28 +369,20 @@ cupdate() {
     fi
 }
 
-printcommand() {
-    # Nome do comando e seus argumentos.
-    NAME="${GREEN}$1 ${LIGHTBLUE}$2${NOCOLOR}"
-    # Indentação das descrições.
-    TABSNO=4
-    FAKETAB="        "
-    FAKETABS=$(printf "$FAKETAB%.0s" $(seq 1 $TABSNO))
-    REALNAMESIZE=$((${#1} + ${#2} + 1))
-    # Quantidade de caracteres por linha que o fmt deveria imprimir.
-    AVAILABLECOL=$((COLUMNS - ${#FAKETABS} - ${#LINEBREAK}))
-    # Formatação da descrição de modo a não ter quebras de linha em palavras.
-    DESC=$(printf "\n$3" | fmt -w $AVAILABLECOL)
-    # Remoção da indentação da primeira linha da descrição e
-    # prepararação para a junção com o nome e seus argumentos.
-    DESC=$(echo "$DESC" | sed -e ':a' -e 'N' -e '$!ba' -e "s/\n/\n$FAKETABS/g")
-    DESC=${DESC:$REALNAMESIZE+1}
-    # Inserção do caractere de quebra de linha em todas as linhas
-    # menos a primeira.
-    DESC=$(echo "$DESC" | sed "s/$FAKETABS/${FAKETABS}$LINEBREAK/g")
-    # Junção com o nome e seus argumentos.
-    printf "${NAME}$DESC\n\n"
-}
+TABSNO=4
+
+if [ $OS = 'Darwin' ]; then
+    FAKETABS=$(printf "        %.0s" $(seq 1 $TABSNO))
+    printcommand() {
+        printf "${GREEN}$1 ${LIGHTBLUE}$2${NOCOLOR}$(sed "s/$FAKETABS/${FAKETABS}$LINEBREAK/g" <(printf "${"$(fmt -w $((COLUMNS - ${#FAKETABS} - ${#LINEBREAK})) <(printf "\n$3") | sed "s/\n/\n$FAKETABS/g")":${#1} + ${#2} + 2}"))\n\n"
+    }
+else
+    REALTABS=$(printf "	%.0s" $(seq 1 $TABSNO))
+    printcommand() {
+        DESC=$(printf "${REALTABS}$3" | fmt -w $COLUMNS)
+        printf "${GREEN}$1 ${LIGHTBLUE}$2${NOCOLOR}${DESC:(${#1} + ${#2} + 1) / 8}\n\n"
+    }
+fi
 
 chelp() {
     printf "\nComandos para rodar programas em C/C++! $COMPUTER\n\n"

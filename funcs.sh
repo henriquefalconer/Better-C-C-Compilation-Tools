@@ -22,6 +22,7 @@ SEARCHI='🔎  '
 INFOI='ℹ️  '
 COMPUTER='💻'
 
+OS=$(uname)
 # Se o sistema for Windows, remover quebra de linha final.
 if [[ "$OS" != "Darwin" && "$OS" != "Linux" ]]; then
     FINALLINEBREAK=''

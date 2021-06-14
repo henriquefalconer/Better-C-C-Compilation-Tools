@@ -22,17 +22,9 @@ SEARCHI='🔎  '
 INFOI='ℹ️  '
 COMPUTER='💻'
 
-# Se o sistema for Windows, utilizar emojis compatíveis e remover quebra de linha final.
+# Se o sistema for Windows, remover quebra de linha final.
 if [[ "$OS" != "Darwin" && "$OS" != "Linux" ]]; then
     FINALLINEBREAK=''
-    SUCCESS='✔️'
-    ROCKET=''
-    FACTORY=''
-    POPCORN=''
-    WRENCH=''
-    SEARCHI=''
-    INFOI='❕ '
-    COMPUTER=''
 fi
 
 finalprint() {

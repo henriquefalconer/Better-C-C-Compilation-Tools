@@ -21,15 +21,6 @@ DOWNLOADI='⬇️'
 SAVEI='📀'
 SUCCESS='🎉'
 
-# Se o sistema for Windows, utilizar emojis compatíveis.
-OS=$(uname)
-if [[ "$OS" != "Darwin" && "$OS" != "Linux" ]]; then
-    TEMPLATEI='⬇️  '
-    DOWNLOADI='⬇️ '
-    SAVEI='⬇️  '
-    SUCCESS='✔️  '
-fi
-
 # Obtém o valor que corresponde com a chave passada do JSON de informações da última versão do projeto.
 getlatestversiondata() {
     printf "$(awk "/^  \"$1\": .+/{print}" <(printf "%s\n" "$CCPPRELEASES") | sed -e "s/^  \"$1\": \"\{0,1\}//g" -e "s/\"\{0,1\},\{0,1\}$//g")"

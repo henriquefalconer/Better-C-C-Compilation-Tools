@@ -32,6 +32,8 @@ Ferramentas de linha de comando para programação em C/C++ para Linux, macOS e 
 4. Definir o **Git Bash** como o terminal padrão do VSCode
 5. Fechar e abrir o VSCode
 
+**Obs.:** Para alterar o terminal padrão do VSCode, [basta seguir estes passos](https://stackoverflow.com/a/45899693)
+
 ## Instalação
 
 Rodar o seguinte comando no terminal do VSCode:

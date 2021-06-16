@@ -34,7 +34,7 @@ inline T input(U textbefore = "", V textafter = "") {
 // Lê o texto digitado na entrada padrão, retornando true se for igual a "s" ou "", e false caso contrário.
 // Opcionalmente, também imprime um texto após a leitura, tal como uma quebra de linha.
 template <typename U = string, typename V = string>
-inline bool simounao(U textbefore = "", V textafter = "") {
+inline bool simOuNao(U textbefore = "", V textafter = "") {
     string escolha = input(textbefore, textafter);
     return escolha == "s" || escolha.empty();
 }

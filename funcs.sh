@@ -174,6 +174,7 @@ cppclass() {
     HGETTERS=''
     HSETTERS=''
     HMETHODS=''
+    CPPSTATICATTRS=''
     CONSTRUCTORCOMMA=''
     CONSTRUCTORPARENTCOMMA=''
     CONSTRUCTORPARAMS=''
@@ -196,6 +197,14 @@ cppclass() {
             ATTRNAME=$(printf "$ATTRNAME" | sed -e "s/ *=.*//g")
         fi
         readinput "\nTipo (string, int, int[10] etc.):" ATTRTYPE
+        STATICTYPE=''
+        STATICPREPEND=''
+        if regexmatch "$ATTRTYPE" '^static '; then
+            ATTRTYPE=${ATTRTYPE:7}
+            STATICTYPE='static '
+            STATICPREPEND="$1::"
+            CPPSTATICATTRS="$CPPSTATICATTRS\n$ATTRTYPE ${STATICPREPEND}$ATTRNAME;"
+        fi
         if regexmatch "$ATTRTYPE" '.*string.*' && ! regexmatch "$HIMPORTS" '.*#include <string>.*'; then
             HIMPORTS="$HIMPORTS\n#include <string>\nusing namespace std;"
         elif regexmatch "$ATTRTYPE" '.*\[.*\].*'; then
@@ -211,7 +220,7 @@ cppclass() {
             [[ ! $HLOCALIMPORT = $1 ]] && ! regexmatch "$HLOCALIMPORTS" ".*$HLOCALIMPORT.*" && HLOCALIMPORTS="$HLOCALIMPORTS\n#include \"$HLOCALIMPORT.h\""
         fi
         CAPITALIZED=$(perl -lne 'use open qw(:std :utf8); print ucfirst' <<<$ATTRNAME)
-        if ! regexmatch "$ATTRTYPE" '^const ' && [ -z "$ATTRNAMEPREPEND" ]; then
+        if ! regexmatch "$ATTRTYPE" '^const ' && [ -z "$ATTRNAMEPREPEND" ] && [ -z "$STATICTYPE" ]; then
             CONSTRUCTORPARAMS="${CONSTRUCTORPARAMS}${CONSTRUCTORCOMMA}${ATTRTYPE}$ATTRNAMEPREPEND ${ATTRNAME}"
             CPPCONSTRUCTORATTRIBUTION="$CPPCONSTRUCTORATTRIBUTION${CONSTRUCTORCOMMA}\n    $ATTRNAME($ATTRNAME)"
             CONSTRUCTORCOMMA=', '
@@ -219,9 +228,9 @@ cppclass() {
             HSETTERS="$HSETTERS\n    void ${ATTRSETTERPARAM};"
             CPPSETTERS="${CPPSETTERS}void $1::${ATTRSETTERPARAM} { this->$ATTRNAME = $ATTRNAME; }\n\n"
         fi
-        HATTRS="$HATTRS\n    $ATTRTYPE ${ATTRNAME}${ATTRNAMEAPPEND}$ATTRVALUE;"
-        HGETTERS="$HGETTERS\n    ${ATTRTYPE}$ATTRNAMEPREPEND get$CAPITALIZED();"
-        CPPGETTERS="${CPPGETTERS}${ATTRTYPE}$ATTRNAMEPREPEND $1::get$CAPITALIZED() { return $ATTRNAME; }\n\n"
+        HATTRS="$HATTRS\n    ${STATICTYPE}$ATTRTYPE ${ATTRNAME}${ATTRNAMEAPPEND}$ATTRVALUE;"
+        HGETTERS="$HGETTERS\n    ${STATICTYPE}${ATTRTYPE}$ATTRNAMEPREPEND get$CAPITALIZED();"
+        CPPGETTERS="${CPPGETTERS}${ATTRTYPE}$ATTRNAMEPREPEND $1::get$CAPITALIZED() { return ${STATICPREPEND}$ATTRNAME; }\n\n"
     done
     printf "\n----- 2/3 ${TTYBOLD}MÉTODOS$TTYRESET $WRENCH-----\n"
     while true; do
@@ -282,6 +291,7 @@ cppclass() {
     HGETTERS=$(formatmultilinetr "$HGETTERS" '\n    // Getters')
     HSETTERS=$(formatmultilinetr "$HSETTERS" '\n    // Setters')
     HMETHODS=$(formatmultilinetr "$HMETHODS" '\n    // Methods')
+    CPPSTATICATTRS=$(formatmultilinetr "$CPPSTATICATTRS" '\n')
     CPPCONSTRUCTORATTRIBUTION=$(formatmultilinetr "${CPPCONSTRUCTORPARENTATTRIBUTION}$CPPCONSTRUCTORATTRIBUTION" ':')
     CPPCONSTRUCTOR=$(formatmultilinetr "$1::$1($CONSTRUCTORPARAMS)$CPPCONSTRUCTORATTRIBUTION {}" '\n\n')
     CPPDESTRUCTOR=$(formatmultilinetr "$CPPDESTRUCTOR" '\n\n')
@@ -303,7 +313,7 @@ cppclass() {
 			#endif  // ${UPPERCASE}_H
 		END
         cat >"$1.cpp" <<-END
-			#include "$1.h"${CPPCONSTRUCTOR}${CPPDESTRUCTOR}${CPPGETTERS}${CPPSETTERS}${CPPMETHODS}
+			#include "$1.h"${CPPSTATICATTRS}${CPPCONSTRUCTOR}${CPPDESTRUCTOR}${CPPGETTERS}${CPPSETTERS}${CPPMETHODS}
 		END
         printf "Arquivos ${LIGHTBLUE}$1.h$NOCOLOR e ${LIGHTBLUE}$1.cpp$NOCOLOR criados na sua pasta! $SUCCESS\n"
         finalprint

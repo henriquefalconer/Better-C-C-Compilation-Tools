@@ -208,7 +208,7 @@ cppclass() {
         fi
         if regexmatch "$ATTRTYPE" '^[A-Z]'; then
             HLOCALIMPORT=$(printf "$ATTRTYPE" | sed -e "s/\*//g")
-            [[ ! $HLOCALIMPORT = $1 ]] && ! regexmatch "$HLOCALIMPORTS" ".*$HLOCALIMPORT.*" && HLOCALIMPORTS="$HLOCALIMPORTS\n#include \"$HLOCALIMPORT.h\"\nclass $HLOCALIMPORT;"
+            [[ ! $HLOCALIMPORT = $1 ]] && ! regexmatch "$HLOCALIMPORTS" ".*$HLOCALIMPORT.*" && HLOCALIMPORTS="$HLOCALIMPORTS\n#include \"$HLOCALIMPORT.h\""
         fi
         CAPITALIZED=$(perl -lne 'use open qw(:std :utf8); print ucfirst' <<<$ATTRNAME)
         if ! regexmatch "$ATTRTYPE" '^const ' && [ -z "$ATTRNAMEPREPEND" ]; then
@@ -240,7 +240,7 @@ cppclass() {
         # TODO: adicionar local import se existir em METHODPARAMS
         if regexmatch "$METHODTYPE" '^[A-Z]'; then
             HLOCALIMPORT=$(printf "$METHODTYPE" | sed -e "s/\*//g")
-            [[ ! $HLOCALIMPORT = $1 ]] && ! regexmatch "$HLOCALIMPORTS" ".*$HLOCALIMPORT.*" && HLOCALIMPORTS="$HLOCALIMPORTS\n#include \"$HLOCALIMPORT.h\"\nclass $HLOCALIMPORT;"
+            [[ ! $HLOCALIMPORT = $1 ]] && ! regexmatch "$HLOCALIMPORTS" ".*$HLOCALIMPORT.*" && HLOCALIMPORTS="$HLOCALIMPORTS\n#include \"$HLOCALIMPORT.h\""
         fi
         HMETHODS="$HMETHODS\n    ${METHODVIRTUALTYPE}$METHODTYPE $METHODNAME($METHODPARAMS);"
         CPPMETHODS="${CPPMETHODS}$METHODTYPE $1::$METHODNAME($METHODPARAMS) {\n    // TODO: adicionar código\n}\n\n"

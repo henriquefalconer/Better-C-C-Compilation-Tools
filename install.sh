@@ -79,4 +79,4 @@ else
 fi
 
 # Aguarda input do usuário para mostrar novos comandos.
-printf "$SUCCESS Configuração feita! para começar a utilizar, feche este shell, abra-o novamente e rode ${LIGHTBLUE}chelp${NOCOLOR}."
+printf "$SUCCESS Configuração feita! para começar a utilizar, feche o VSCode, abra-o novamente e rode ${LIGHTBLUE}chelp${NOCOLOR}."

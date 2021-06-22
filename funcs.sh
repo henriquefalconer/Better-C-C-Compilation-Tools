@@ -250,12 +250,19 @@ cppclass() {
         HDESTRUCTOR="virtual ~$1();"
         CPPDESTRUCTOR="$1::~$1() {\n    // TODO: adicionar lógica de liberação de memória\n}"
     fi
+    STDEXCEPT='logic_error|domain_error|invalid_argument|length_error|out_of_range|runtime_error|range_error|overflow_error|underflow_error'
+    STDEXCEPTADDED=false
     if yesorno "\nPossui classe(s) pai?"; then
         while true; do
             readinput "\nNome do pai (ou ${TTYBOLD}ENTER$TTYRESET para pular):" CPARENTCLASSNAME
             [ "$CPARENTCLASSNAME" = '' ] && break
             CPPCONSTRUCTORPARENTATTRIBUTION="$CPPCONSTRUCTORPARENTATTRIBUTION${CONSTRUCTORPARENTCOMMA}\n    $CPARENTCLASSNAME()"
-            HPARENTIMPORTS="$HPARENTIMPORTS\n#include \"$CPARENTCLASSNAME.h\""
+            if [ $STDEXCEPTADDED = false ] && regexmatch "$CPARENTCLASSNAME" "$STDEXCEPT"; then
+                HIMPORTS="\n#include <stdexcept>$HIMPORTS$(regexmatch "$HIMPORTS" '.*using namespace std;.*' || printf '\nusing namespace std;')"
+                STDEXCEPTADDED=true
+            else
+                HPARENTIMPORTS="$HPARENTIMPORTS\n#include \"$CPARENTCLASSNAME.h\""
+            fi
             HPARENTNAMES="${HPARENTNAMES}${CONSTRUCTORPARENTCOMMA}public $CPARENTCLASSNAME"
             CONSTRUCTORPARENTCOMMA=', '
         done

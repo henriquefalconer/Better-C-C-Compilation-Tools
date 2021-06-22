@@ -257,7 +257,7 @@ cppclass() {
     printf "\n----- 3/3 ${TTYBOLD}CONFIGURAÇÕES$TTYRESET $WRENCH-----\n"
     if yesorno "\nIncluir um destrutor?"; then
         HDESTRUCTOR="virtual ~$1();"
-        CPPDESTRUCTOR="$1::~$1() {\n    // TODO: adicionar lógica de liberação de memória\n}"
+        CPPDESTRUCTOR="$1::~$1() {}"
     fi
     STDEXCEPT='logic_error|domain_error|invalid_argument|length_error|out_of_range|runtime_error|range_error|overflow_error|underflow_error'
     STDEXCEPTADDED=false

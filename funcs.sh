@@ -160,6 +160,106 @@ cppnew() {
     fi
 }
 
+formatmultilinetr() {
+    [ -z "$1" ] || printf "$2$1"
+}
+
+createhclass() {
+    UPPERCASE=$(printf "$1" | tr '[:lower:]' '[:upper:]')
+    HPARENTNAMES=$(formatmultilinetr "$HPARENTNAMES" ': ')
+    HPRIVATEANDPROTECTED=$(formatmultilinetr "$HPRIVATEANDPROTECTED")
+    HDESTRUCTOR=$(formatmultilinetr "$HDESTRUCTOR" '\n    ')
+    HGETTERS=$(formatmultilinetr "$HGETTERS" '\n    // Getters')
+    HSETTERS=$(formatmultilinetr "$HSETTERS" '\n    // Setters')
+    HMETHODS=$(formatmultilinetr "$HMETHODS" '\n    // Methods')
+    cat >"$1.h" <<-END
+		#ifndef ${UPPERCASE}_H
+		#define ${UPPERCASE}_H${HIMPORTSANDDEFINITIONS}
+		
+		class $1${HPARENTNAMES} {
+		$HPRIVATEANDPROTECTED
+		
+		   public:${HCONSTRUCTOR}${HDESTRUCTOR}${HGETTERS}${HSETTERS}${HMETHODS}
+		};
+		
+		#endif  // ${UPPERCASE}_H
+	END
+}
+
+createcppclass() {
+    CPPSTATICATTRS=$(formatmultilinetr "$CPPSTATICATTRS" '\n')
+    CPPCONSTRUCTOR=$(formatmultilinetr "$CPPCONSTRUCTOR" '\n\n')
+    CPPDESTRUCTOR=$(formatmultilinetr "$CPPDESTRUCTOR" '\n\n')
+    CPPGETTERS=$(formatmultilinetr "$CPPGETTERS" '\n\n// Getters\n')
+    CPPSETTERS=$(formatmultilinetr "$CPPSETTERS" '\n\n// Setters\n')
+    CPPMETHODS=$(formatmultilinetr "$CPPMETHODS" '\n\n// Methods\n')
+    cat >"$1.cpp" <<-END
+		$CPPINCLUDES${CPPSTATICATTRS}${CPPCONSTRUCTOR}${CPPDESTRUCTOR}${CPPGETTERS}${CPPSETTERS}${CPPMETHODS}
+	END
+}
+
+createcppattr() {
+    ATTRVALUE=''
+    ATTRNAMEAPPEND=''
+    ATTRNAMEPREPEND=''
+    STATICTYPE=''
+    STATICPREPEND=''
+    if regexmatch "$ATTRNAME" '.* *= *.*'; then
+        ATTRVALUE=" = $(printf "$ATTRNAME" | sed -e "s/.*= *//g")"
+        ATTRNAME=$(printf "$ATTRNAME" | sed -e "s/ *=.*//g")
+    fi
+    if regexmatch "$ATTRTYPE" 'static '; then
+        ATTRTYPE=${ATTRTYPE:7}
+        STATICTYPE='static '
+        STATICPREPEND="$1::"
+        CPPSTATICATTRS="${CPPSTATICATTRS}${STATICNEWLINE}$ATTRTYPE ${STATICPREPEND}$ATTRNAME;\n"
+    fi
+    if regexmatch "$ATTRTYPE" '.*string.*' && ! regexmatch "$HIMPORTS" '.*#include <string>.*'; then
+        HIMPORTS="$HIMPORTS\n#include <string>\nusing namespace std;"
+    elif regexmatch "$ATTRTYPE" '.*\[.*\].*'; then
+        ATTRMAXLENGTH=$(printf "$ATTRTYPE" | sed -e "s/.*\[//g" -e "s/\]//g")
+        ATTRTYPE=$(printf "$ATTRTYPE" | sed -e "s/\[.*\]//g")
+        UPPERCASE=$(printf "$ATTRNAME" | tr '[:lower:]' '[:upper:]')
+        HDEFINITIONS="$HDEFINITIONS\n#define MAXIMO_$UPPERCASE $ATTRMAXLENGTH"
+        ATTRNAMEAPPEND="[MAXIMO_${UPPERCASE}]"
+        ATTRNAMEPREPEND="*"
+    fi
+    if regexmatch "$ATTRTYPE" '^[A-Z]'; then
+        HLOCALIMPORT=$(printf "$ATTRTYPE" | sed -e "s/\*//g")
+        [[ ! $HLOCALIMPORT = $1 ]] && ! regexmatch "$HLOCALIMPORTS" ".*$HLOCALIMPORT.*" && HLOCALIMPORTS="$HLOCALIMPORTS\n#include \"$HLOCALIMPORT.h\""
+    fi
+    CAPITALIZED=$(perl -lne 'use open qw(:std :utf8); print ucfirst' <<<$ATTRNAME)
+    if ([ $CREATEHSETTER = true ] || [ $CREATECPPSETTER = true ]) && ! regexmatch "$ATTRTYPE" '^const ' && [ -z "$ATTRNAMEPREPEND" ] && [ -z "$STATICTYPE" ]; then
+        CONSTRUCTORPARAMS="${CONSTRUCTORPARAMS}${CONSTRUCTORCOMMA}${ATTRTYPE}$ATTRNAMEPREPEND ${ATTRNAME}"
+        CPPCONSTRUCTORATTRIBUTION="$CPPCONSTRUCTORATTRIBUTION${CONSTRUCTORCOMMA}\n    $ATTRNAME($ATTRNAME)"
+        CONSTRUCTORCOMMA=', '
+        ATTRSETTERPARAM="set$CAPITALIZED($ATTRTYPE $ATTRNAME)"
+        [ $CREATEHSETTER = true ] && HSETTERS="$HSETTERS\n    void ${ATTRSETTERPARAM};"
+        [ $CREATECPPSETTER = true ] && CPPSETTERS="${CPPSETTERS}void $1::${ATTRSETTERPARAM} { this->$ATTRNAME = $ATTRNAME; }\n\n"
+    fi
+    HATTRS="$HATTRS\n    ${STATICTYPE}$ATTRTYPE ${ATTRNAME}${ATTRNAMEAPPEND}$ATTRVALUE;"
+    [ $CREATEHGETTER = true ] && HGETTERS="$HGETTERS\n    ${STATICTYPE}${ATTRTYPE}$ATTRNAMEPREPEND get$CAPITALIZED();"
+    [ $CREATECPPGETTER = true ] && CPPGETTERS="${CPPGETTERS}${ATTRTYPE}$ATTRNAMEPREPEND $1::get$CAPITALIZED() { return ${STATICPREPEND}$ATTRNAME; }\n\n"
+}
+
+createcppmethod() {
+    METHODVIRTUALTYPE=''
+    if regexmatch "$METHODTYPE" '^virtual '; then
+        METHODTYPE=${METHODTYPE:8}
+        METHODVIRTUALTYPE='virtual '
+    fi
+    if (regexmatch "$METHODTYPE" '.*string.*' || regexmatch "$METHODPARAMS" '.*string.*') && ! regexmatch "$HIMPORTS" '.*#include <string>.*'; then
+        HIMPORTS="$HIMPORTS\n#include <string>\nusing namespace std;"
+    fi
+    # TODO: adicionar local import se existir em METHODPARAMS
+    if regexmatch "$METHODTYPE" '^[A-Z]'; then
+        HLOCALIMPORT=$(printf "$METHODTYPE" | sed -e "s/\*//g")
+        [[ ! $HLOCALIMPORT = $1 ]] && ! regexmatch "$HLOCALIMPORTS" ".*$HLOCALIMPORT.*" && HLOCALIMPORTS="$HLOCALIMPORTS\n#include \"$HLOCALIMPORT.h\""
+    fi
+    [ $CREATEHMETHOD = true ] && HMETHODS="$HMETHODS\n    ${METHODVIRTUALTYPE}$METHODTYPE $METHODNAME($METHODPARAMS);"
+    CPPMETHODS="${CPPMETHODS}$METHODTYPE $1::$METHODNAME($METHODPARAMS) {\n    // TODO: adicionar código\n}\n\n"
+}
+
 cppclass() {
     if checkparam "$1" "Você deve passar o nome da classe como parâmetro."; then
         return 1
@@ -185,74 +285,26 @@ cppclass() {
     CPPGETTERS=''
     CPPSETTERS=''
     CPPMETHODS=''
+    CPPADDITIONALINCLUDES=''
+    CREATEHGETTER=true
+    CREATEHSETTER=true
+    CREATECPPGETTER=true
+    CREATECPPSETTER=true
+    CREATEHMETHOD=true
     printf -- "---- 1/3 ${TTYBOLD}ATRIBUTOS$TTYRESET $POPCORN----\n"
     while true; do
         readinput "\nNome (ou ${TTYBOLD}ENTER$TTYRESET para pular):" ATTRNAME
         [ "$ATTRNAME" = '' ] && break
-        ATTRVALUE=''
-        ATTRNAMEAPPEND=''
-        ATTRNAMEPREPEND=''
-        if regexmatch "$ATTRNAME" '.* *= *.*'; then
-            ATTRVALUE=" = $(printf "$ATTRNAME" | sed -e "s/.*= *//g")"
-            ATTRNAME=$(printf "$ATTRNAME" | sed -e "s/ *=.*//g")
-        fi
         readinput "\nTipo (string, int, int[10] etc.):" ATTRTYPE
-        STATICTYPE=''
-        STATICPREPEND=''
-        if regexmatch "$ATTRTYPE" '^static '; then
-            ATTRTYPE=${ATTRTYPE:7}
-            STATICTYPE='static '
-            STATICPREPEND="$1::"
-            CPPSTATICATTRS="$CPPSTATICATTRS\n$ATTRTYPE ${STATICPREPEND}$ATTRNAME;"
-        fi
-        if regexmatch "$ATTRTYPE" '.*string.*' && ! regexmatch "$HIMPORTS" '.*#include <string>.*'; then
-            HIMPORTS="$HIMPORTS\n#include <string>\nusing namespace std;"
-        elif regexmatch "$ATTRTYPE" '.*\[.*\].*'; then
-            ATTRMAXLENGTH=$(printf "$ATTRTYPE" | sed -e "s/.*\[//g" -e "s/\]//g")
-            ATTRTYPE=$(printf "$ATTRTYPE" | sed -e "s/\[.*\]//g")
-            UPPERCASE=$(printf "$ATTRNAME" | tr '[:lower:]' '[:upper:]')
-            HDEFINITIONS="$HDEFINITIONS\n#define MAXIMO_$UPPERCASE $ATTRMAXLENGTH"
-            ATTRNAMEAPPEND="[MAXIMO_${UPPERCASE}]"
-            ATTRNAMEPREPEND="*"
-        fi
-        if regexmatch "$ATTRTYPE" '^[A-Z]'; then
-            HLOCALIMPORT=$(printf "$ATTRTYPE" | sed -e "s/\*//g")
-            [[ ! $HLOCALIMPORT = $1 ]] && ! regexmatch "$HLOCALIMPORTS" ".*$HLOCALIMPORT.*" && HLOCALIMPORTS="$HLOCALIMPORTS\n#include \"$HLOCALIMPORT.h\""
-        fi
-        CAPITALIZED=$(perl -lne 'use open qw(:std :utf8); print ucfirst' <<<$ATTRNAME)
-        if ! regexmatch "$ATTRTYPE" '^const ' && [ -z "$ATTRNAMEPREPEND" ] && [ -z "$STATICTYPE" ]; then
-            CONSTRUCTORPARAMS="${CONSTRUCTORPARAMS}${CONSTRUCTORCOMMA}${ATTRTYPE}$ATTRNAMEPREPEND ${ATTRNAME}"
-            CPPCONSTRUCTORATTRIBUTION="$CPPCONSTRUCTORATTRIBUTION${CONSTRUCTORCOMMA}\n    $ATTRNAME($ATTRNAME)"
-            CONSTRUCTORCOMMA=', '
-            ATTRSETTERPARAM="set$CAPITALIZED($ATTRTYPE $ATTRNAME)"
-            HSETTERS="$HSETTERS\n    void ${ATTRSETTERPARAM};"
-            CPPSETTERS="${CPPSETTERS}void $1::${ATTRSETTERPARAM} { this->$ATTRNAME = $ATTRNAME; }\n\n"
-        fi
-        HATTRS="$HATTRS\n    ${STATICTYPE}$ATTRTYPE ${ATTRNAME}${ATTRNAMEAPPEND}$ATTRVALUE;"
-        HGETTERS="$HGETTERS\n    ${STATICTYPE}${ATTRTYPE}$ATTRNAMEPREPEND get$CAPITALIZED();"
-        CPPGETTERS="${CPPGETTERS}${ATTRTYPE}$ATTRNAMEPREPEND $1::get$CAPITALIZED() { return ${STATICPREPEND}$ATTRNAME; }\n\n"
+        createcppattr "$1"
     done
     printf "\n----- 2/3 ${TTYBOLD}MÉTODOS$TTYRESET $WRENCH-----\n"
     while true; do
         readinput "\nNome (ou ${TTYBOLD}ENTER$TTYRESET para pular):" METHODNAME
         [ "$METHODNAME" = '' ] && break
         readinput "\nTipo de retorno (int, void etc.):" METHODTYPE
-        METHODVIRTUALTYPE=''
-        if regexmatch "$METHODTYPE" '^virtual '; then
-            METHODTYPE=${METHODTYPE:8}
-            METHODVIRTUALTYPE='virtual '
-        fi
         readinput "\nLista de parâmetros (ex.: \"string nome, int contatos[]\"):" METHODPARAMS
-        if (regexmatch "$METHODTYPE" '.*string.*' || regexmatch "$METHODPARAMS" '.*string.*') && ! regexmatch "$HIMPORTS" '.*#include <string>.*'; then
-            HIMPORTS="$HIMPORTS\n#include <string>\nusing namespace std;"
-        fi
-        # TODO: adicionar local import se existir em METHODPARAMS
-        if regexmatch "$METHODTYPE" '^[A-Z]'; then
-            HLOCALIMPORT=$(printf "$METHODTYPE" | sed -e "s/\*//g")
-            [[ ! $HLOCALIMPORT = $1 ]] && ! regexmatch "$HLOCALIMPORTS" ".*$HLOCALIMPORT.*" && HLOCALIMPORTS="$HLOCALIMPORTS\n#include \"$HLOCALIMPORT.h\""
-        fi
-        HMETHODS="$HMETHODS\n    ${METHODVIRTUALTYPE}$METHODTYPE $METHODNAME($METHODPARAMS);"
-        CPPMETHODS="${CPPMETHODS}$METHODTYPE $1::$METHODNAME($METHODPARAMS) {\n    // TODO: adicionar código\n}\n\n"
+        createcppmethod "$1"
     done
     printf "\n----- 3/3 ${TTYBOLD}CONFIGURAÇÕES$TTYRESET $WRENCH-----\n"
     if yesorno "\nIncluir um destrutor?"; then
@@ -277,44 +329,19 @@ cppclass() {
         done
         [ ! -z "$CPPCONSTRUCTORATTRIBUTION" ] && CPPCONSTRUCTORPARENTATTRIBUTION="${CPPCONSTRUCTORPARENTATTRIBUTION}$CONSTRUCTORPARENTCOMMA"
     fi
-    formatmultilinetr() {
-        [ -z "$1" ] || printf "$2$1"
-    }
     HIMPORTS=$(formatmultilinetr "$HIMPORTS" '\n')
     HLOCALIMPORTS=$(formatmultilinetr "$HLOCALIMPORTS" '\n')
     HPARENTIMPORTS=$(formatmultilinetr "$HPARENTIMPORTS" '\n')
     HDEFINITIONS=$(formatmultilinetr "$HDEFINITIONS" '\n')
-    HPARENTNAMES=$(formatmultilinetr "$HPARENTNAMES" ': ')
-    HATTRS=$(formatmultilinetr "$HATTRS")
+    HIMPORTSANDDEFINITIONS="${HIMPORTS}${HLOCALIMPORTS}${HPARENTIMPORTS}${HDEFINITIONS}"
+    HPRIVATEANDPROTECTED=$(formatmultilinetr "$HATTRS" '   private:')
     HCONSTRUCTOR=$(formatmultilinetr "$1($CONSTRUCTORPARAMS);" '\n    ')
-    HDESTRUCTOR=$(formatmultilinetr "$HDESTRUCTOR" '\n    ')
-    HGETTERS=$(formatmultilinetr "$HGETTERS" '\n    // Getters')
-    HSETTERS=$(formatmultilinetr "$HSETTERS" '\n    // Setters')
-    HMETHODS=$(formatmultilinetr "$HMETHODS" '\n    // Methods')
-    CPPSTATICATTRS=$(formatmultilinetr "$CPPSTATICATTRS" '\n')
     CPPCONSTRUCTORATTRIBUTION=$(formatmultilinetr "${CPPCONSTRUCTORPARENTATTRIBUTION}$CPPCONSTRUCTORATTRIBUTION" ':')
-    CPPCONSTRUCTOR=$(formatmultilinetr "$1::$1($CONSTRUCTORPARAMS)$CPPCONSTRUCTORATTRIBUTION {}" '\n\n')
-    CPPDESTRUCTOR=$(formatmultilinetr "$CPPDESTRUCTOR" '\n\n')
-    CPPGETTERS=$(formatmultilinetr "$CPPGETTERS" '\n\n// Getters\n')
-    CPPSETTERS=$(formatmultilinetr "$CPPSETTERS" '\n\n// Setters\n')
-    CPPMETHODS=$(formatmultilinetr "$CPPMETHODS" '\n\n// Methods\n')
-    UPPERCASE=$(printf "$1" | tr '[:lower:]' '[:upper:]')
+    CPPCONSTRUCTOR="$1::$1($CONSTRUCTORPARAMS)$CPPCONSTRUCTORATTRIBUTION {}"
+    CPPINCLUDES="#include \"$1.h\""
     if checkoverwrite "$1.h" "$1.cpp"; then
-        cat >"$1.h" <<-END
-			#ifndef ${UPPERCASE}_H
-			#define ${UPPERCASE}_H${HIMPORTS}${HLOCALIMPORTS}${HPARENTIMPORTS}${HDEFINITIONS}
-			
-			class $1${HPARENTNAMES} {
-			   private:${HATTRS}
-			
-			   public:${HCONSTRUCTOR}${HDESTRUCTOR}${HGETTERS}${HSETTERS}${HMETHODS}
-			};
-			
-			#endif  // ${UPPERCASE}_H
-		END
-        cat >"$1.cpp" <<-END
-			#include "$1.h"${CPPSTATICATTRS}${CPPCONSTRUCTOR}${CPPDESTRUCTOR}${CPPGETTERS}${CPPSETTERS}${CPPMETHODS}
-		END
+        createhclass "$1"
+        createcppclass "$1"
         printf "Arquivos ${LIGHTBLUE}$1.h$NOCOLOR e ${LIGHTBLUE}$1.cpp$NOCOLOR criados na sua pasta! $SUCCESS\n"
         finalprint
     fi

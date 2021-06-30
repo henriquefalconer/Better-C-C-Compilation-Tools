@@ -498,7 +498,7 @@ cppmissing() {
 
     while read -r LINE; do
         regexmatch "$LINE" "class $1[^;]" && INSIDECLASS=true
-        regexmatch "$LINE" '^};$' && INSIDECLASS=false
+        regexmatch "$LINE" '\};$' && INSIDECLASS=false
         [ $INSIDECLASS = false ] || [ -z "$LINE" ] || regexmatch "$LINE" "^class $1[^;]|^private:|^protected:|^public:|^//" && continue;
         # Se for um atributo
         if ! regexmatch "$LINE" '\('; then

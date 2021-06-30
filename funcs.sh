@@ -167,19 +167,18 @@ formatmultilinetr() {
 createhclass() {
     UPPERCASE=$(printf "$1" | tr '[:lower:]' '[:upper:]')
     HPARENTNAMES=$(formatmultilinetr "$HPARENTNAMES" ': ')
-    HPRIVATEANDPROTECTED=$(formatmultilinetr "$HPRIVATEANDPROTECTED")
+    HPRIVATEANDPROTECTED=$(formatmultilinetr "$HPRIVATEANDPROTECTED" '\n')
     HDESTRUCTOR=$(formatmultilinetr "$HDESTRUCTOR" '\n    ')
     HGETTERS=$(formatmultilinetr "$HGETTERS" '\n    // Getters')
     HSETTERS=$(formatmultilinetr "$HSETTERS" '\n    // Setters')
     HMETHODS=$(formatmultilinetr "$HMETHODS" '\n    // Methods')
+    [ -z "$HPRIVATEANDPROTECTED" ] && HSPACE='' || HSPACE="\n"
+    HPUBLIC=$(formatmultilinetr "${HCONSTRUCTOR}${HDESTRUCTOR}${HGETTERS}${HSETTERS}${HMETHODS}" "$HSPACE\n   public:")
     cat >"$1.h" <<-END
 		#ifndef ${UPPERCASE}_H
 		#define ${UPPERCASE}_H${HIMPORTSANDDEFINITIONS}
 		
-		class $1${HPARENTNAMES} {
-		$HPRIVATEANDPROTECTED
-		
-		   public:${HCONSTRUCTOR}${HDESTRUCTOR}${HGETTERS}${HSETTERS}${HMETHODS}
+		class $1${HPARENTNAMES} {${HPRIVATEANDPROTECTED}${HPUBLIC}
 		};
 		
 		#endif  // ${UPPERCASE}_H

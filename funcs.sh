@@ -354,7 +354,7 @@ cppmissing() {
     1=$(printf "$1" | sed -e "s/\..*//g")
 
     if ! [ -f "$1.h" ]; then
-        printf "\nO arquivo ${LIGHTBLUE}$1.h$NOCOLOR não existe\n"
+        printf "\nO arquivo ${LIGHTBLUE}$1.h$NOCOLOR não existe nesta pasta.\n"
         finalprint
         return 1
     fi

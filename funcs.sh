@@ -564,6 +564,7 @@ cppmissing() {
     CPPINCLUDES=$([ -z "$CPPINCLUDES" ] && printf "#include \"$1.h\"\n" || printf "$CPPINCLUDES")
     CPPCONSTRUCTOR=$([ -z "$CPPCONSTRUCTOR" ] && printf "$1::$1($CONSTRUCTORPARAMS)$CPPCONSTRUCTORATTRIBUTION {}" || printf "$CPPCONSTRUCTOR")
     CPPDESTRUCTOR=$([ -z "$CPPDESTRUCTOR" ] && printf "$1::~$1() {}" || printf "$CPPDESTRUCTOR")
+    regexmatch "$HCLSTXTWHOLE" "~$1\(" || CPPDESTRUCTOR=''
 
     createhclass "$1"
     sed -i '' -e "s/$LINEBREAKSUB/\\\\n/g" "$1.h"

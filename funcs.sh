@@ -347,6 +347,230 @@ cppclass() {
     fi
 }
 
+cppmissing() {
+    if checkparam "$1" "Você deve passar o nome da classe como parâmetro."; then
+        return 1
+    fi
+    # Remover ".", ".h" ou ".cpp"
+    1=$(printf "$1" | sed -e "s/\..*//g")
+
+    if ! [ -f "$1.h" ]; then
+        printf "\nO arquivo ${LIGHTBLUE}$1.h$NOCOLOR não existe\n"
+        finalprint
+        return 1
+    fi
+
+    CREATEGETTERS=false
+    if yesorno "\nCriar ${LIGHTBLUE}getters${NOCOLOR} para todos os atributos?"; then
+        CREATEGETTERS=true
+        printf '\n'
+    fi
+
+    CREATESETTERS=false
+    if yesorno "Criar ${LIGHTBLUE}setters${NOCOLOR} para todos os atributos?"; then
+        CREATESETTERS=true
+    fi
+
+    printf "\nCriando atributos e métodos faltantes em ${LIGHTBLUE}$1.h${NOCOLOR} e ${LIGHTBLUE}$1.cpp${NOCOLOR}... "
+
+    [ -f "$1.cpp" ] || printf '\n' >> "$1.cpp"
+
+    getlineno() {
+        printf "$(grep -n -m 1 "$1" <<< "$2" | sed 's/\([0-9]*\).*/\1/')"
+    }
+
+    LINEBREAKSUB='SUBSTITUTODEQUEBRADELINHA'
+
+    HCLSTXTWHOLE=$(cat "$1.h" | sed s/\\\\n/$LINEBREAKSUB/g)
+
+    HCLASSBODY=$(awk "/^\};$/{include=0} include==1{print} /^class $1[^;]/{include=1}" <(printf "$HCLSTXTWHOLE"))
+
+    HMETHODS=''
+    HSETTERS=''
+    HGETTERS=''
+    HPUBLIC=''
+    HPRIVATEANDPROTECTED=''
+
+    HPARENTNAMES=${$(grep "^class $1[^;]" <<< "$HCLSTXTWHOLE" | sed 's/\([^{]*\).*/\1/'):2}
+
+    MATCHLINENO=$(getlineno "\/\/ Methods" "$HCLASSBODY")
+    if ! [ -z "$MATCHLINENO" ]; then
+        HMETHODS="\n$(awk "NR>${MATCHLINENO}" <(printf "$HCLASSBODY"))"
+        HCLASSBODY=$(awk "NR<${MATCHLINENO}" <(printf "$HCLASSBODY"))
+    fi
+
+    MATCHLINENO=$(getlineno "\/\/ Setters" "$HCLASSBODY")
+    if ! [ -z "$MATCHLINENO" ]; then
+        HSETTERS="\n$(awk "NR>${MATCHLINENO}" <(printf "$HCLASSBODY"))"
+        HCLASSBODY=$(awk "NR<${MATCHLINENO}" <(printf "$HCLASSBODY"))
+    fi
+
+    MATCHLINENO=$(getlineno "\/\/ Getters" "$HCLASSBODY")
+    if ! [ -z "$MATCHLINENO" ]; then
+        HGETTERS="\n$(awk "NR>${MATCHLINENO}" <(printf "$HCLASSBODY"))"
+        HCLASSBODY=$(awk "NR<${MATCHLINENO}" <(printf "$HCLASSBODY"))
+    fi
+
+    MATCHLINENO=$(getlineno "public:" "$HCLASSBODY")
+    if ! [ -z "$MATCHLINENO" ]; then
+        HPUBLIC="$(awk "NR>${MATCHLINENO}" <(printf "$HCLASSBODY"))"
+        HCLASSBODY=$(awk "NR<${MATCHLINENO}" <(printf "$HCLASSBODY"))
+    fi
+
+    MATCHLINENO=$(getlineno "[(private)|(protected)]:" "$HCLASSBODY")
+    if ! [ -z "$MATCHLINENO" ]; then
+        MATCHLINENO=$(($MATCHLINENO - 1))
+        HPRIVATEANDPROTECTED="$(awk "NR>${MATCHLINENO}" <(printf "$HCLASSBODY"))"
+        HCLASSBODY=$(awk "NR<=${MATCHLINENO}" <(printf "$HCLASSBODY"))
+    fi
+
+    [ -z "$HCLASSBODY" ] || HCLASSBODY="$HCLASSBODY\n\n"
+
+    HPRIVATEANDPROTECTED="$HCLASSBODY$HPRIVATEANDPROTECTED"
+
+    CPPCLSTXTWHOLE=$(cat "$1.cpp" | sed s/\\\\n/$LINEBREAKSUB/g)
+    CPPCLSTXT="$CPPCLSTXTWHOLE"
+
+    CPPMETHODS=''
+    CPPSETTERS=''
+    CPPGETTERS=''
+    CPPDESTRUCTOR=''
+    CPPCONSTRUCTOR=''
+    CONSTRUCTORCOMMA=''
+    CONSTRUCTORPARAMS=''
+    CPPCONSTRUCTORATTRIBUTION=''
+    CPPSTATICATTRS=''
+
+    MATCHLINENO=$(getlineno "\/\/ Methods" "$CPPCLSTXT")
+    if ! [ -z "$MATCHLINENO" ]; then
+        CPPMETHODS="$(awk "NR>${MATCHLINENO}" <(printf "$CPPCLSTXT"))\n\n"
+        CPPCLSTXT=$(awk "NR<${MATCHLINENO}" <(printf "$CPPCLSTXT"))
+    fi
+
+    MATCHLINENO=$(getlineno "\/\/ Setters" "$CPPCLSTXT")
+    if ! [ -z "$MATCHLINENO" ]; then
+        CPPSETTERS="$(awk "NR>${MATCHLINENO}" <(printf "$CPPCLSTXT"))\n\n"
+        CPPCLSTXT=$(awk "NR<${MATCHLINENO}" <(printf "$CPPCLSTXT"))
+    fi
+
+    MATCHLINENO=$(getlineno "\/\/ Getters" "$CPPCLSTXT")
+    if ! [ -z "$MATCHLINENO" ]; then
+        CPPGETTERS="$(awk "NR>${MATCHLINENO}" <(printf "$CPPCLSTXT"))\n\n"
+        CPPCLSTXT=$(awk "NR<${MATCHLINENO}" <(printf "$CPPCLSTXT"))
+    fi
+
+    # Se ainda possuir métodos, considerar que tudo é CPPMETHODS
+    MATCHLINENO=$(getlineno " $1::[a-zA-Z]*(" "$CPPCLSTXT")
+    if ! [ -z "$MATCHLINENO" ]; then
+        CPPMETHODS="$CPPMETHODS$(awk "NR>$(($MATCHLINENO - 1))" <(printf "$CPPCLSTXT"))\n\n"
+        CPPCLSTXT=$(awk "NR<${MATCHLINENO}" <(printf "$CPPCLSTXT"))
+    fi
+
+    MATCHLINENO=$(getlineno "^$1::~$1(" "$CPPCLSTXT")
+    if ! [ -z "$MATCHLINENO" ]; then
+        MATCHLINENO=$(($MATCHLINENO - 1))
+        CPPDESTRUCTOR="$(awk "NR>${MATCHLINENO}" <(printf "$CPPCLSTXT"))\n\n"
+        CPPCLSTXT=$(awk "NR<${MATCHLINENO}" <(printf "$CPPCLSTXT"))
+    fi
+
+    MATCHLINENO=$(getlineno "^$1::$1(" "$CPPCLSTXT")
+    if ! [ -z "$MATCHLINENO" ]; then
+        MATCHLINENO=$(($MATCHLINENO - 1))
+        CPPCONSTRUCTOR="$(awk "NR>${MATCHLINENO}" <(printf "$CPPCLSTXT"))\n\n"
+        CPPCLSTXT=$(awk "NR<=${MATCHLINENO}" <(printf "$CPPCLSTXT"))
+    fi
+
+    MATCHLINENO=$(getlineno "$1::" "$CPPCLSTXT")
+    if ! [ -z "$MATCHLINENO" ]; then
+        MATCHLINENO=$(($MATCHLINENO - 1))
+        CPPSTATICATTRS="$(awk "NR>${MATCHLINENO}" <(printf "$CPPCLSTXT"))\n"
+        CPPCLSTXT=$(awk "NR<${MATCHLINENO}" <(printf "$CPPCLSTXT"))
+    fi
+
+    CPPINCLUDES="$CPPCLSTXT"
+
+    INSIDECLASS=false
+    NOPRINTS=true
+
+    elemadded() {
+        [ $NOPRINTS = true ] && printf '\n' && NOPRINTS=false
+        printf "+ ${GREEN}$1$NOCOLOR\n"
+    }
+
+    while read -r LINE; do
+        regexmatch "$LINE" "class $1[^;]" && INSIDECLASS=true
+        regexmatch "$LINE" '^};$' && INSIDECLASS=false
+        [ $INSIDECLASS = false ] || [ -z "$LINE" ] || regexmatch "$LINE" "^class $1[^;]|^private:|^protected:|^public:|^//" && continue;
+        # Se for um atributo
+        if ! regexmatch "$LINE" '\('; then
+            ATTRNAME=$(printf "$LINE" | sed -e "s/\( *=.*\)*;$//g" -e "s/[^ ]* //g")
+            CAPITALIZED=$(perl -lne 'use open qw(:std :utf8); print ucfirst' <<<$ATTRNAME)
+            ATTRTYPE=$(printf "$LINE" | sed "s/ *$ATTRNAME.*//g")
+            CREATECPPGETTER=false
+            if ! regexmatch "$CPPCLSTXTWHOLE" "$1::get$CAPITALIZED" && [ $CREATEGETTERS = true ]; then
+                elemadded "get${CAPITALIZED}"
+                CREATECPPGETTER=true
+            fi
+            CREATECPPSETTER=false
+            if ! regexmatch "$ATTRTYPE" "static |const " && ! regexmatch "$CPPCLSTXTWHOLE" "$1::set$CAPITALIZED" && [ $CREATESETTERS = true ]; then
+                elemadded "set${CAPITALIZED}"
+                CREATECPPSETTER=true
+            fi
+            CREATEHGETTER=false
+            if ! regexmatch "$HCLSTXTWHOLE" "get$CAPITALIZED" && [ $CREATEGETTERS = true ]; then
+                [ $CREATECPPGETTER = false ] && elemadded "get${CAPITALIZED}"
+                CREATEHGETTER=true
+            fi
+            CREATEHSETTER=false
+            if ! regexmatch "$ATTRTYPE" "static |const " && ! regexmatch "$HCLSTXTWHOLE" "set$CAPITALIZED" && [ $CREATESETTERS = true ]; then
+                [ $CREATECPPSETTER = false ] && elemadded "set${CAPITALIZED}"
+                CREATEHSETTER=true
+            fi
+            CREATESTATICATTR=false
+            TYPEWITHOUTSTATIC=$(printf "$ATTRTYPE" | sed "s/static //")
+            if regexmatch "$ATTRTYPE" "static " && ! regexmatch "$CPPCLSTXTWHOLE" "$TYPEWITHOUTSTATIC $1::$ATTRNAME"; then
+                elemadded "${ATTRNAME}"
+                CREATESTATICATTR=true
+            fi
+            if [ $CREATECPPGETTER = true ] || [ $CREATECPPSETTER = true ] || [ $CREATEHGETTER = true ] || [ $CREATEHSETTER = true ] || [ $CREATESTATICATTR = true ]; then
+                createcppattr "$1"
+            fi
+        # Se for um método
+        else
+            # Se for construtor ou destrutor, ignorar
+            regexmatch "$LINE" "$1\(" && continue
+            METHODNAME=$(printf "$LINE" | sed -e "s/(.*//g" -e "s/[^ ]* //g")
+            # Se já estiver implementado, ignorar
+            CPPAMALGOM="$CPPCLSTXTWHOLE\n$CPPGETTERS\n$CPPSETTERS"
+            regexmatch "$CPPAMALGOM" "$1::$METHODNAME\(" && continue
+            elemadded "${METHODNAME}"
+            METHODPARAMS=$(printf "$LINE" | sed -e "s/.*(//g" -e "s/).*//g")
+            METHODTYPE=$(printf "$LINE" | sed "s/ *$METHODNAME(.*//g")
+            CREATEHMETHOD=false
+            createcppmethod "$1"
+        fi
+    done < "$1.h"
+
+    printf "$ROCKET Feito!\n"
+
+    finalprint
+
+    UPPERCASE=$(printf "$1" | tr '[:lower:]' '[:upper:]')
+    HIMPORTSANDDEFINITIONS=$(awk "/^class $1[^;]/{ignore=1} /^#ifndef [a-zA-Z]*/{ignore=1} ignore==0{print} /^#define [a-zA-Z]*/{ignore=0}" <(printf "$HCLSTXTWHOLE"))
+    HIMPORTSANDDEFINITIONS=$(formatmultilinetr "$HIMPORTSANDDEFINITIONS" '\n')
+    HCONSTRUCTOR=$(formatmultilinetr "$HPUBLIC" '\n')
+    CPPSTATICATTRS=$(formatmultilinetr "$CPPSTATICATTRS" '\n')
+    HDESTRUCTOR=''
+    CPPINCLUDES=$([ -z "$CPPINCLUDES" ] && printf "#include \"$1.h\"\n" || printf "$CPPINCLUDES")
+    CPPCONSTRUCTOR=$([ -z "$CPPCONSTRUCTOR" ] && printf "$1::$1($CONSTRUCTORPARAMS)$CPPCONSTRUCTORATTRIBUTION {}" || printf "$CPPCONSTRUCTOR")
+    CPPDESTRUCTOR=$([ -z "$CPPDESTRUCTOR" ] && printf "$1::~$1() {}" || printf "$CPPDESTRUCTOR")
+
+    createhclass "$1"
+    sed -i '' -e "s/$LINEBREAKSUB/\\\\n/g" "$1.h"
+    createcppclass "$1"
+    sed -i '' -e "s/$LINEBREAKSUB/\\\\n/g" "$1.cpp"
+}
+
 hidevscc() {
     mkdir -p .vscode
     cat >.vscode/settings.json <<-END

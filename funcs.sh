@@ -498,6 +498,8 @@ cppmissing() {
     }
 
     while read -r LINE; do
+        # Remover ultimo caractere no Windows
+        [[ "$OS" != "Darwin" && "$OS" != "Linux" ]] && LINE="${LINE%?}"
         regexmatch "$LINE" "class ${CLSNAME}[^;]" && INSIDECLASS=true
         regexmatch "$LINE" '\};$' && INSIDECLASS=false
         [ $INSIDECLASS = false ] || [ -z "$LINE" ] || regexmatch "$LINE" "^class ${CLSNAME}[^;]|^private:|^protected:|^public:|^//" && continue;

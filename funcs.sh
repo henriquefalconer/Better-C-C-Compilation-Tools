@@ -735,7 +735,7 @@ chelp() {
     printcommand 'crun' '[nome do arquivo.c]' "compila e roda um código em C (use \\${TTYBOLD}TAB\\$TTYRESET para completar o nome do arquivo ao escrever na linha de comando)."
     printcommand 'cppnew' '[nome do projeto]' 'gera um novo projeto de C++ na pasta atual, com um template inicial.'
     printcommand 'cppclass' '[nome da classe]' "gera um par de arquivos .h e .cpp na pasta atual, a partir das informações dadas na linha de comando, além de automaticamente criar setters e getters para todos os atributos."
-    printcommand 'cppmissing' '[nome da classe]' "analisa um arquivo de cabeçalho da classe já existente, gerando todos os atributos e métodos faltantes no respectivo arquivo de implementação, assim como opcionalmente criando getters e setters para todos seus atributos."
+    printcommand 'cppmissing' '[nome da classe]' "analisa um arquivo de cabeçalho da classe já existente, gerando todos os atributos e métodos faltantes no respectivo arquivo de implementação, assim como opcionalmente criando getters e setters faltantes para todos seus atributos. Além disso, também opcionalmente adiciona as importações faltantes no arquivo de cabeçalho."
     printcommand 'cpprun' '' "compila todos os arquivos C++ da pasta atual, rodando a função main. Deve ser rodado na pasta do projeto. \\${TTYBOLD}IMPORTANTE:\\$TTYRESET se a pasta atual possuir mais de um projeto, ocorrerá um erro."
     printcommand 'out' '' "roda o último código em C/C++ compilado com \\${LIGHTBLUE}crun\\$NOCOLOR ou \\${LIGHTBLUE}cpprun\\$NOCOLOR na pasta atual."
     printcommand 'ctempl' '[nome do arquivo.c]' 'redefine o template inicial para arquivos C.'

@@ -562,7 +562,7 @@ cppmissing() {
         fi
     done < "$CLSNAME.h"
 
-    printf "$ROCKET Feito!\n"
+    [ $NOPRINTS = false ] && printf "$ROCKET Feito!\n" || printf "Nenhum faltante.\n"
 
     finalprint
 

@@ -250,7 +250,7 @@ createcppattr() {
         ATTRMAXLENGTH=$(printf "$ATTRTYPE" | sed -e "s/.*\[//g" -e "s/\]//g")
         ATTRTYPE=$(printf "$ATTRTYPE" | sed -e "s/\[.*\]//g")
         UPPERCASE=$(printf "$ATTRNAME" | tr '[:lower:]' '[:upper:]')
-        HDEFINITIONS="$HDEFINITIONS\n#define MAXIMO_$UPPERCASE $ATTRMAXLENGTH"
+        ! regexmatch "$HDEFINITIONS" "#define MAXIMO_$UPPERCASE" && HDEFINITIONS="$HDEFINITIONS\n#define MAXIMO_$UPPERCASE $ATTRMAXLENGTH"
         ATTRNAMEAPPEND="[MAXIMO_${UPPERCASE}]"
         ATTRNAMEPREPEND="*"
     fi
@@ -567,8 +567,13 @@ cppmissing() {
         # Se for um atributo
         if ! regexmatch "$LINE" '\('; then
             ATTRNAME=$(printf "$LINE" | sed -e "s/\( *=.*\)*;$//g" -e "s/[^ ]* //g")
+            ATTRTYPEPOSTPEND=''
+            if regexmatch "$ATTRNAME" '.*\[.*\].*'; then
+                ATTRNAME=$(printf "$ATTRNAME" | sed "s/\[.*\]//g")
+                ATTRTYPEPOSTPEND='[]'
+            fi
             CAPITALIZED=$(perl -lne 'use open qw(:std :utf8); print ucfirst' <<<$ATTRNAME)
-            ATTRTYPE=$(printf "$LINE" | sed "s/ \{1,\}$ATTRNAME.*//g")
+            ATTRTYPE="$(printf "$LINE" | sed "s/ \{1,\}$ATTRNAME.*//g")$ATTRTYPEPOSTPEND"
             CREATECPPGETTER=false
             if ! regexmatch "$CPPCLSTXTWHOLE" "$CLSNAME::get$CAPITALIZED\(" && [ $CREATEGETTERS = true ]; then
                 elemadded "get${CAPITALIZED}"

@@ -197,17 +197,29 @@ createcppclass() {
 	END
 }
 
+cppprintimport() {
+    if [ $PRINTIMPORTS = true ]; then
+        [ $NOPRINTS = true ] && printf '\n' && NOPRINTS=false
+        printf "+ ${LIGHTBLUE}$1$NOCOLOR\n"
+    fi
+}
+
 createstdimport() {
     if [ "$1" = "$2" ] && ! regexmatch "$HIMPORTS" ".*#include <$2>.*"; then
+        cppprintimport "$2"
         HIMPORTS="$HIMPORTS\n#include <$2>"
         HNAMESPACESTD='using namespace std;'
     fi
 }
 
 creategeneralimports() {
+    if [ $CREATEIMPORTS = false ]; then
+        return 0
+    fi
     SEPARATEDTYPESARRAY=(`echo ${2//[, <>\*0-9\[\]]/ }`);
     for TYPE in "${SEPARATEDTYPESARRAY[@]}"; do
-        if ! [ "$TYPE" = "$1" ] && regexmatch "$TYPE" '^[A-Z]' && ! regexmatch "$HLOCALIMPORTS" ".*$TYPE.*"; then
+        if ! [ "$TYPE" = "$1" ] && regexmatch "$TYPE" '^[A-Z]' && ! regexmatch "$HLOCALIMPORTS" ".*#include \"$TYPE.h\".*"; then
+            cppprintimport "$TYPE"
             HLOCALIMPORTS="$HLOCALIMPORTS\n#include \"$TYPE.h\""
         else
             for STDTYPE in 'string' 'regex' 'array' 'vector' 'list' 'forward_list' 'deque' 'queue' 'stack' 'map' 'multimap' 'set' 'unordered_map' 'unordered_set'; do
@@ -304,6 +316,8 @@ cppclass() {
     CREATECPPGETTER=true
     CREATECPPSETTER=true
     CREATEHMETHOD=true
+    CREATEIMPORTS=true
+    PRINTIMPORTS=false
     printf -- "---- 1/3 ${TTYBOLD}ATRIBUTOS$TTYRESET $POPCORN----\n"
     while true; do
         readinput "\nNome (ou ${TTYBOLD}ENTER$TTYRESET para pular):" ATTRNAME
@@ -344,7 +358,7 @@ cppclass() {
         [ ! -z "$CPPCONSTRUCTORATTRIBUTION" ] && CPPCONSTRUCTORPARENTATTRIBUTION="${CPPCONSTRUCTORPARENTATTRIBUTION}$CONSTRUCTORPARENTCOMMA"
     fi
     HIMPORTS=$(formatmultilinetr "$HIMPORTS" '\n')
-    HNAMESPACESTD=$(formatmultilinetr "$HNAMESPACESTD" '\n')
+    HNAMESPACESTD=$(formatmultilinetr "$HNAMESPACESTD" '\n\n')
     HLOCALIMPORTS=$(formatmultilinetr "$HLOCALIMPORTS" '\n')
     HPARENTIMPORTS=$(formatmultilinetr "$HPARENTIMPORTS" '\n')
     HDEFINITIONS=$(formatmultilinetr "$HDEFINITIONS" '\n')
@@ -379,13 +393,18 @@ cppmissing() {
     CREATEGETTERS=false
     if yesorno "\nCriar ${LIGHTBLUE}getters${NOCOLOR} para todos os atributos?"; then
         CREATEGETTERS=true
-        printf '\n'
     fi
 
     CREATESETTERS=false
-    if yesorno "Criar ${LIGHTBLUE}setters${NOCOLOR} para todos os atributos?"; then
+    if yesorno "\nCriar ${LIGHTBLUE}setters${NOCOLOR} para todos os atributos?"; then
         CREATESETTERS=true
     fi
+
+    CREATEIMPORTS=false
+    if yesorno "\nAdicionar importações faltantes?"; then
+        CREATEIMPORTS=true
+    fi
+    PRINTIMPORTS=$CREATEIMPORTS
 
     # Em Windows, converter para LF
     if [[ "$OS" != "Darwin" && "$OS" != "Linux" ]]; then
@@ -393,7 +412,7 @@ cppmissing() {
         dos2unix -q "$1.cpp"
     fi
 
-    printf "\nCriando atributos e métodos faltantes em ${LIGHTBLUE}$CLSNAME.h${NOCOLOR} e ${LIGHTBLUE}$CLSNAME.cpp${NOCOLOR}... "
+    printf "\nCriando atributos$([ $CREATEIMPORTS = true ] && printf ", métodos e importações" || printf " e métodos") faltantes em ${LIGHTBLUE}$CLSNAME.h${NOCOLOR} e ${LIGHTBLUE}$CLSNAME.cpp${NOCOLOR}... "
 
     [ -f "$CLSNAME.cpp" ] || printf '\n' >> "$CLSNAME.cpp"
 
@@ -449,6 +468,27 @@ cppmissing() {
     [ -z "$HCLASSBODY" ] || HCLASSBODY="$HCLASSBODY\n\n"
 
     HPRIVATEANDPROTECTED="$HCLASSBODY$HPRIVATEANDPROTECTED"
+
+    HIMPORTSANDDEFINITIONS=$(awk "/^class ${CLSNAME}[^;]/{ignore=1} /^#ifndef [a-zA-Z]*/{ignore=1} ignore==0{print} /^#define [a-zA-Z]*/{ignore=0}" <(printf "$HCLSTXTWHOLE"))
+    HIMPORTSANDDEFINITIONS=$(formatmultilinetr "$HIMPORTSANDDEFINITIONS" '\n')
+    HIMPORTSANDDEFSTEMP="$HIMPORTSANDDEFINITIONS"
+
+    HIMPORTS=$(printf "$HIMPORTSANDDEFSTEMP" | awk '/^#include </{print}')
+    HIMPORTS=$(formatmultilinetr "$HIMPORTS" '\n')
+    HIMPORTSANDDEFSTEMP=$(printf "$HIMPORTSANDDEFSTEMP" | awk '!/^#include </{print}')
+
+    HNAMESPACESTD=$(printf "$HIMPORTSANDDEFSTEMP" | awk '/^using namespace std;$/{print}')
+    HNAMESPACESTD=$(formatmultilinetr "$HNAMESPACESTD" '')
+    HIMPORTSANDDEFSTEMP=$(printf "$HIMPORTSANDDEFSTEMP" | awk '!/^using namespace std;$/{print}')
+
+    HLOCALIMPORTS=$(printf "$HIMPORTSANDDEFSTEMP" | awk '/^#include "|class [A-Za-z]*;/{print}')
+    HLOCALIMPORTS=$(formatmultilinetr "$HLOCALIMPORTS" '\n')
+    HIMPORTSANDDEFSTEMP=$(printf "$HIMPORTSANDDEFSTEMP" | awk '!/^#include "|class [A-Za-z]*;/{print}')
+
+    HDEFINITIONS=$(printf "$HIMPORTSANDDEFSTEMP" | awk '/^#define /{print}')
+    HDEFINITIONS=$(formatmultilinetr "$HDEFINITIONS" '\n')
+    HIMPORTSANDDEFSREMAINING=$(printf "$HIMPORTSANDDEFSTEMP" | awk '!/^#define |^$/{print}')
+    HIMPORTSANDDEFSREMAINING=$(formatmultilinetr "$HIMPORTSANDDEFSREMAINING" '\n\n')
 
     CPPCLSTXTWHOLE=$(cat "$CLSNAME.cpp" | sed s/\\\\n/$LINEBREAKSUB/g)
     CPPCLSTXT="$CPPCLSTXTWHOLE"
@@ -554,7 +594,7 @@ cppmissing() {
                 elemadded "${ATTRNAME}"
                 CREATESTATICATTR=true
             fi
-            if [ $CREATECPPGETTER = true ] || [ $CREATECPPSETTER = true ] || [ $CREATEHGETTER = true ] || [ $CREATEHSETTER = true ] || [ $CREATESTATICATTR = true ]; then
+            if [ $CREATEIMPORTS = true ] || [ $CREATECPPGETTER = true ] || [ $CREATECPPSETTER = true ] || [ $CREATEHGETTER = true ] || [ $CREATEHSETTER = true ] || [ $CREATESTATICATTR = true ]; then
                 createcppattr "$CLSNAME"
             fi
         # Se for um método
@@ -562,24 +602,31 @@ cppmissing() {
             # Se for construtor ou destrutor, ignorar
             regexmatch "$LINE" "$CLSNAME\(" && continue
             METHODNAME=$(printf "$LINE" | sed -e "s/(.*//g" -e "s/[^ ]* //g")
+            METHODTYPE=$(printf "$LINE" | sed "s/ \{1,\}$METHODNAME(.*//g")
+            [ $CREATEIMPORTS = true ] && creategeneralimports "$1" "$METHODTYPE"
             # Se já estiver implementado, ignorar
             CPPAMALGOM="$CPPCLSTXTWHOLE\n$CPPGETTERS\n$CPPSETTERS"
             regexmatch "$CPPAMALGOM" "$CLSNAME::$METHODNAME\(" && continue
             elemadded "${METHODNAME}"
             METHODPARAMS=$(printf "$LINE" | sed -e "s/.*(//g" -e "s/).*//g")
-            METHODTYPE=$(printf "$LINE" | sed "s/ \{1,\}$METHODNAME(.*//g")
             CREATEHMETHOD=false
             createcppmethod "$CLSNAME"
         fi
     done < "$CLSNAME.h"
 
-    [ $NOPRINTS = false ] && printf "$ROCKET Feito!\n" || printf "Nenhum faltante.\n"
+    [ $NOPRINTS = false ] && printf "$ROCKET Feito!\n" || printf "Nada faltante.\n"
 
     finalprint
 
     UPPERCASE=$(printf "$CLSNAME" | tr '[:lower:]' '[:upper:]')
-    HIMPORTSANDDEFINITIONS=$(awk "/^class ${CLSNAME}[^;]/{ignore=1} /^#ifndef [a-zA-Z]*/{ignore=1} ignore==0{print} /^#define [a-zA-Z]*/{ignore=0}" <(printf "$HCLSTXTWHOLE"))
-    HIMPORTSANDDEFINITIONS=$(formatmultilinetr "$HIMPORTSANDDEFINITIONS" '\n')
+    if [ $CREATEIMPORTS = true ]; then
+        HIMPORTS=$(formatmultilinetr "$HIMPORTS" '\n')
+        HNAMESPACESTD=$(formatmultilinetr "$HNAMESPACESTD" '\n\n')
+        HLOCALIMPORTS=$(formatmultilinetr "$HLOCALIMPORTS" '\n')
+        HDEFINITIONS=$(formatmultilinetr "$HDEFINITIONS" '\n')
+        HIMPORTSANDDEFINITIONS="${HIMPORTS}${HNAMESPACESTD}${HLOCALIMPORTS}${HDEFINITIONS}${HIMPORTSANDDEFSREMAINING}"
+        HIMPORTSANDDEFINITIONS=$(formatmultilinetr "$HIMPORTSANDDEFINITIONS" '')
+    fi
     HCONSTRUCTOR=$(formatmultilinetr "$HPUBLIC" '\n')
     HDESTRUCTOR=''
     CPPINCLUDES=$([ -z "$CPPINCLUDES" ] && printf "#include \"$CLSNAME.h\"\n" || printf "$CPPINCLUDES")

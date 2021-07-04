@@ -1,6 +1,3 @@
-
-# ------ Start of Better C/C++ Tools ------
-
 BETTERCCPPVERS='X.X.X'
 
 # Formatação de strings
@@ -773,5 +770,3 @@ chelp() {
     printf "Sugestões ou problemas podem ser submetidos aqui: ${TTYBOLD}https://github.com/henriquefalconer/better-c-cpp-tools/issues$TTYRESET\n"
     ccheckupdate
 }
-
-# ------ End of Better C/C++ Tools ------

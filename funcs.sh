@@ -601,14 +601,14 @@ cppmissing() {
         # Se for um método
         else
             # Se for construtor ou destrutor, ignorar
-            regexmatch " $LINE" "[ ~]$CLSNAME\(" && continue
             METHODNAME=$(printf "$LINE" | sed -e "s/(.*//g" -e "s/[^ ]* //g")
-            METHODTYPE=$(printf "$LINE" | sed "s/ \{1,\}$METHODNAME(.*//g")
+            METHODTYPE=$(printf "$LINE" | sed -e "s/ \{1,\}$METHODNAME(.*//g" -e "s/^$METHODNAME(.*//g")
             METHODPARAMS=$(printf "$LINE" | sed -e "s/.*(//g" -e "s/).*//g")
             if [ $CREATEIMPORTS = true ]; then 
                 PARAMTYPES=$(printf "$METHODPARAMS" | sed -e 's/ [a-zA-Z]\{1,\},/ /g' -e 's/ [a-zA-Z]\{1,\}$/ /')
                 creategeneralimports "$CLSNAME" "$METHODTYPE $PARAMTYPES"
             fi
+            regexmatch " $LINE" "[ ~]$CLSNAME\(" && continue
             # Se já estiver implementado, ignorar
             CPPAMALGOM="$CPPCLSTXTWHOLE\n$CPPGETTERS\n$CPPSETTERS"
             regexmatch "$CPPAMALGOM" "$CLSNAME::$METHODNAME\(" && continue

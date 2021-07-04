@@ -45,11 +45,14 @@ curl -fsSL https://raw.githubusercontent.com/henriquefalconer/better-c-cpp-tools
 curl -fsSL https://raw.githubusercontent.com/henriquefalconer/better-c-cpp-tools/main/templates/cpp/withio/main.cpp >"$HOME/.ccpptemplates/cpp/withio/main.cpp"
 printf " Feito!\n\n"
 
+BETTERCCPPSTART='# ------ Start of Better C/C++ Tools ------'
+BETTERCCPPEND='# ------ End of Better C/C++ Tools ------'
+BETTERCCPPSTARTRGX='# ------ Start of Better C\/C\+\+ Tools ------'
+BETTERCCPPENDRGX='# ------ End of Better C\/C\+\+ Tools ------'
+
 clearold() {
     if [ -f "$1" ]; then
-        BETTERCCPPSTART='# ------ Start of Better C\/C\+\+ Tools ------'
-        BETTERCCPPEND='# ------ End of Better C\/C\+\+ Tools ------'
-        awk "/$BETTERCCPPSTART/{stop=1} stop==0{print} /$BETTERCCPPEND/{stop=0}" "$1" > .tmpbettercpp && mv .tmpbettercpp "$1"
+        awk "/$BETTERCCPPSTARTrgx/{stop=1} stop==0{print} /$BETTERCCPPENDrgx/{stop=0}" "$1" > .tmpbettercpp && mv .tmpbettercpp "$1"
         [ -f .tmpbettercpp ] && rm .tmpbettercpp
     fi
 }
@@ -58,10 +61,13 @@ clearold() {
 savefuncs() {
     printf "2/3 $DOWNLOADI  Baixando novos comandos de C/C++..."
     clearold "$1"
+    printf "\n$BETTERCCPPSTART\n\n" >>"$1"
+    curl -fsSL https://raw.githubusercontent.com/henriquefalconer/better-c-cpp-tools/main/LICENSE.md | sed '/[^\(^$\)]/s/^/# /' >>"$1"
     curl -fsSL https://raw.githubusercontent.com/henriquefalconer/better-c-cpp-tools/main/funcs.sh >>"$1"
+    printf "\n$BETTERCCPPEND\n" >>"$1"
     printf " Feito!\n\n"
     printf "3/3 $SAVEI Salvando-os em ${LIGHTBLUE}$1${NOCOLOR}..."
-    sed -i -e "s/BETTERCCPPVERS='X.X.X'/BETTERCCPPVERS='$LATESTVERSIONNAME'/g" "$1"
+    sed -i -e "s/BETTERCCPPVERS='X.X.X'/\n\nBETTERCCPPVERS='$LATESTVERSIONNAME'/g" "$1"
     printf " Salvos!\n\n"
 }
 

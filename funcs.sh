@@ -286,7 +286,7 @@ createcppmethod() {
     PARAMTYPES=$(printf "$METHODPARAMS" | sed -e 's/ [a-zA-Z]\{1,\},/ /g' -e 's/ [a-zA-Z]\{1,\}$/ /')
     creategeneralimports "$1" "$METHODTYPE $PARAMTYPES"
     [ $CREATEHMETHOD = true ] && HMETHODS="$HMETHODS\n    ${METHODVIRTUALTYPE}${METHODSTATICTYPE}$METHODTYPE $METHODNAME($METHODPARAMS);"
-    CPPMETHODS="${CPPMETHODS}$METHODTYPE $1::$METHODNAME($METHODPARAMS) {\n    // TODO: adicionar código\n}\n\n"
+    CPPMETHODS="${CPPMETHODS}$METHODTYPE $1::$METHODNAME($METHODPARAMS) {\n    // Adicionar código\n}\n\n"
 }
 
 cppclass() {

@@ -601,7 +601,7 @@ cppmissing() {
         # Se for um método
         else
             # Se for construtor ou destrutor, ignorar
-            regexmatch "$LINE" "$CLSNAME\(" && continue
+            regexmatch " $LINE" "[ ~]$CLSNAME\(" && continue
             METHODNAME=$(printf "$LINE" | sed -e "s/(.*//g" -e "s/[^ ]* //g")
             METHODTYPE=$(printf "$LINE" | sed "s/ \{1,\}$METHODNAME(.*//g")
             METHODPARAMS=$(printf "$LINE" | sed -e "s/.*(//g" -e "s/).*//g")

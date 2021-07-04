@@ -244,12 +244,12 @@ createcppattr() {
 createcppmethod() {
     METHODVIRTUALTYPE=''
     METHODSTATICTYPE=''
-    if regexmatch "$METHODTYPE" '^virtual '; then
-        METHODTYPE=${METHODTYPE:8}
+    if regexmatch "$METHODTYPE" 'virtual '; then
+        METHODTYPE=$(printf "$METHODTYPE" | sed "s/virtual //")
         METHODVIRTUALTYPE='virtual '
     fi
     if regexmatch "$METHODTYPE" 'static '; then
-        METHODTYPE=${METHODTYPE:7}
+        METHODTYPE=$(printf "$METHODTYPE" | sed "s/static //")
         METHODSTATICTYPE='static '
     fi
     if (regexmatch "$METHODTYPE" '.*string.*' || regexmatch "$METHODPARAMS" '.*string.*') && ! regexmatch "$HIMPORTS" '.*#include <string>.*'; then

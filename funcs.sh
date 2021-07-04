@@ -511,7 +511,7 @@ cppmissing() {
         if ! regexmatch "$LINE" '\('; then
             ATTRNAME=$(printf "$LINE" | sed -e "s/\( *=.*\)*;$//g" -e "s/[^ ]* //g")
             CAPITALIZED=$(perl -lne 'use open qw(:std :utf8); print ucfirst' <<<$ATTRNAME)
-            ATTRTYPE=$(printf "$LINE" | sed "s/ *$ATTRNAME.*//g")
+            ATTRTYPE=$(printf "$LINE" | sed "s/ \{1,\}$ATTRNAME.*//g")
             CREATECPPGETTER=false
             if ! regexmatch "$CPPCLSTXTWHOLE" "$CLSNAME::get$CAPITALIZED" && [ $CREATEGETTERS = true ]; then
                 elemadded "get${CAPITALIZED}"
@@ -551,7 +551,7 @@ cppmissing() {
             regexmatch "$CPPAMALGOM" "$CLSNAME::$METHODNAME\(" && continue
             elemadded "${METHODNAME}"
             METHODPARAMS=$(printf "$LINE" | sed -e "s/.*(//g" -e "s/).*//g")
-            METHODTYPE=$(printf "$LINE" | sed "s/ *$METHODNAME(.*//g")
+            METHODTYPE=$(printf "$LINE" | sed "s/ \{1,\}$METHODNAME(.*//g")
             CREATEHMETHOD=false
             createcppmethod "$CLSNAME"
         fi

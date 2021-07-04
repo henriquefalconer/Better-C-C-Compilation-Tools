@@ -243,9 +243,14 @@ createcppattr() {
 
 createcppmethod() {
     METHODVIRTUALTYPE=''
+    METHODSTATICTYPE=''
     if regexmatch "$METHODTYPE" '^virtual '; then
         METHODTYPE=${METHODTYPE:8}
         METHODVIRTUALTYPE='virtual '
+    fi
+    if regexmatch "$METHODTYPE" 'static '; then
+        METHODTYPE=${METHODTYPE:7}
+        METHODSTATICTYPE='static '
     fi
     if (regexmatch "$METHODTYPE" '.*string.*' || regexmatch "$METHODPARAMS" '.*string.*') && ! regexmatch "$HIMPORTS" '.*#include <string>.*'; then
         HIMPORTS="$HIMPORTS\n#include <string>\nusing namespace std;"
@@ -255,7 +260,7 @@ createcppmethod() {
         HLOCALIMPORT=$(printf "$METHODTYPE" | sed -e "s/\*//g")
         [[ ! $HLOCALIMPORT = $1 ]] && ! regexmatch "$HLOCALIMPORTS" ".*$HLOCALIMPORT.*" && HLOCALIMPORTS="$HLOCALIMPORTS\n#include \"$HLOCALIMPORT.h\""
     fi
-    [ $CREATEHMETHOD = true ] && HMETHODS="$HMETHODS\n    ${METHODVIRTUALTYPE}$METHODTYPE $METHODNAME($METHODPARAMS);"
+    [ $CREATEHMETHOD = true ] && HMETHODS="$HMETHODS\n    ${METHODVIRTUALTYPE}${METHODSTATICTYPE}$METHODTYPE $METHODNAME($METHODPARAMS);"
     CPPMETHODS="${CPPMETHODS}$METHODTYPE $1::$METHODNAME($METHODPARAMS) {\n    // TODO: adicionar código\n}\n\n"
 }
 

@@ -210,7 +210,7 @@ creategeneralimports() {
         if ! [ "$TYPE" = "$1" ] && regexmatch "$TYPE" '^[A-Z]' && ! regexmatch "$HLOCALIMPORTS" ".*$TYPE.*"; then
             HLOCALIMPORTS="$HLOCALIMPORTS\n#include \"$TYPE.h\""
         else
-            for STDTYPE in 'string' 'vector' 'list' 'forward-list' 'deque' 'map' 'multimap' 'set'; do
+            for STDTYPE in 'string' 'regex' 'array' 'vector' 'list' 'forward_list' 'deque' 'queue' 'stack' 'map' 'multimap' 'set' 'unordered_map' 'unordered_set'; do
                 createstdimport "$TYPE" "$STDTYPE"
             done
         fi

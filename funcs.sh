@@ -518,22 +518,22 @@ cppmissing() {
             CAPITALIZED=$(perl -lne 'use open qw(:std :utf8); print ucfirst' <<<$ATTRNAME)
             ATTRTYPE=$(printf "$LINE" | sed "s/ \{1,\}$ATTRNAME.*//g")
             CREATECPPGETTER=false
-            if ! regexmatch "$CPPCLSTXTWHOLE" "$CLSNAME::get$CAPITALIZED" && [ $CREATEGETTERS = true ]; then
+            if ! regexmatch "$CPPCLSTXTWHOLE" "$CLSNAME::get$CAPITALIZED\(" && [ $CREATEGETTERS = true ]; then
                 elemadded "get${CAPITALIZED}"
                 CREATECPPGETTER=true
             fi
             CREATECPPSETTER=false
-            if ! regexmatch "$ATTRTYPE" "static |const " && ! regexmatch "$CPPCLSTXTWHOLE" "$CLSNAME::set$CAPITALIZED" && [ $CREATESETTERS = true ]; then
+            if ! regexmatch "$ATTRTYPE" "static |const " && ! regexmatch "$CPPCLSTXTWHOLE" "$CLSNAME::set$CAPITALIZED\(" && [ $CREATESETTERS = true ]; then
                 elemadded "set${CAPITALIZED}"
                 CREATECPPSETTER=true
             fi
             CREATEHGETTER=false
-            if ! regexmatch "$HCLSTXTWHOLE" "get$CAPITALIZED" && [ $CREATEGETTERS = true ]; then
+            if ! regexmatch "$HCLSTXTWHOLE" "get$CAPITALIZED\(" && [ $CREATEGETTERS = true ]; then
                 [ $CREATECPPGETTER = false ] && elemadded "get${CAPITALIZED}"
                 CREATEHGETTER=true
             fi
             CREATEHSETTER=false
-            if ! regexmatch "$ATTRTYPE" "static |const " && ! regexmatch "$HCLSTXTWHOLE" "set$CAPITALIZED" && [ $CREATESETTERS = true ]; then
+            if ! regexmatch "$ATTRTYPE" "static |const " && ! regexmatch "$HCLSTXTWHOLE" "set$CAPITALIZED\(" && [ $CREATESETTERS = true ]; then
                 [ $CREATECPPSETTER = false ] && elemadded "set${CAPITALIZED}"
                 CREATEHSETTER=true
             fi

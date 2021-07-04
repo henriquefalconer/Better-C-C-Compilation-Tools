@@ -371,6 +371,12 @@ cppmissing() {
         CREATESETTERS=true
     fi
 
+    # Em Windows, converter para LF
+    if [[ "$OS" != "Darwin" && "$OS" != "Linux" ]]; then
+        dos2unix -q "$1.h"
+        dos2unix -q "$1.cpp"
+    fi
+
     printf "\nCriando atributos e métodos faltantes em ${LIGHTBLUE}$CLSNAME.h${NOCOLOR} e ${LIGHTBLUE}$CLSNAME.cpp${NOCOLOR}... "
 
     [ -f "$CLSNAME.cpp" ] || printf '\n' >> "$CLSNAME.cpp"
@@ -498,8 +504,6 @@ cppmissing() {
     }
 
     while read -r LINE; do
-        # Remover ultimo caractere no Windows
-        [[ "$OS" != "Darwin" && "$OS" != "Linux" ]] && LINE="${LINE%?}"
         regexmatch "$LINE" "class ${CLSNAME}[^;]" && INSIDECLASS=true
         regexmatch "$LINE" '\};$' && INSIDECLASS=false
         [ $INSIDECLASS = false ] || [ -z "$LINE" ] || regexmatch "$LINE" "^class ${CLSNAME}[^;]|^private:|^protected:|^public:|^//" && continue;

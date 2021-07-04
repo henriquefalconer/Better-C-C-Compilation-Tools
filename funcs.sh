@@ -186,7 +186,7 @@ createhclass() {
 }
 
 createcppclass() {
-    CPPSTATICATTRS=$(formatmultilinetr "$CPPSTATICATTRS" '\n')
+    CPPSTATICATTRS=$(formatmultilinetr "$CPPSTATICATTRS" '\n\n')
     CPPCONSTRUCTOR=$(formatmultilinetr "$CPPCONSTRUCTOR" '\n\n')
     CPPDESTRUCTOR=$(formatmultilinetr "$CPPDESTRUCTOR" '\n\n')
     CPPGETTERS=$(formatmultilinetr "$CPPGETTERS" '\n\n// Getters\n')
@@ -494,7 +494,7 @@ cppmissing() {
     MATCHLINENO=$(getlineno "$CLSNAME::" "$CPPCLSTXT")
     if ! [ -z "$MATCHLINENO" ]; then
         MATCHLINENO=$(($MATCHLINENO - 1))
-        CPPSTATICATTRS="$(awk "NR>${MATCHLINENO}" <(printf "$CPPCLSTXT"))\n"
+        CPPSTATICATTRS="$(awk "NR>${MATCHLINENO}" <(printf "$CPPCLSTXT"))"
         CPPCLSTXT=$(awk "NR<${MATCHLINENO}" <(printf "$CPPCLSTXT"))
     fi
 
@@ -570,7 +570,6 @@ cppmissing() {
     HIMPORTSANDDEFINITIONS=$(awk "/^class ${CLSNAME}[^;]/{ignore=1} /^#ifndef [a-zA-Z]*/{ignore=1} ignore==0{print} /^#define [a-zA-Z]*/{ignore=0}" <(printf "$HCLSTXTWHOLE"))
     HIMPORTSANDDEFINITIONS=$(formatmultilinetr "$HIMPORTSANDDEFINITIONS" '\n')
     HCONSTRUCTOR=$(formatmultilinetr "$HPUBLIC" '\n')
-    CPPSTATICATTRS=$(formatmultilinetr "$CPPSTATICATTRS" '\n')
     HDESTRUCTOR=''
     CPPINCLUDES=$([ -z "$CPPINCLUDES" ] && printf "#include \"$CLSNAME.h\"\n" || printf "$CPPINCLUDES")
     CPPCONSTRUCTOR=$([ -z "$CPPCONSTRUCTOR" ] && printf "$CLSNAME::$CLSNAME($CONSTRUCTORPARAMS)$CPPCONSTRUCTORATTRIBUTION {}" || printf "$CPPCONSTRUCTOR")

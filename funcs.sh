@@ -286,7 +286,7 @@ createcppmethod() {
     PARAMTYPES=$(printf "$METHODPARAMS" | sed -e 's/ [a-zA-Z]\{1,\},/ /g' -e 's/ [a-zA-Z]\{1,\}$/ /')
     creategeneralimports "$1" "$METHODTYPE $PARAMTYPES"
     [ $CREATEHMETHOD = true ] && HMETHODS="$HMETHODS\n    ${METHODVIRTUALTYPE}${METHODSTATICTYPE}$METHODTYPE $METHODNAME($METHODPARAMS);"
-    CPPMETHODS="${CPPMETHODS}$METHODTYPE $1::$METHODNAME($METHODPARAMS) {\n    // TODO: adicionar código\n}\n\n"
+    CPPMETHODS="${CPPMETHODS}$METHODTYPE $1::$METHODNAME($METHODPARAMS) {\n    // Adicionar código\n}\n\n"
 }
 
 cppclass() {
@@ -629,10 +629,6 @@ cppmissing() {
         fi
     done < "$CLSNAME.h"
 
-    [ $NOPRINTS = false ] && printf "$ROCKET Feito!\n" || printf "Nada faltante.\n"
-
-    finalprint
-
     UPPERCASE=$(printf "$CLSNAME" | tr '[:lower:]' '[:upper:]')
     if [ $CREATEIMPORTS = true ]; then
         HIMPORTS=$(formatmultilinetr "$HIMPORTS" '\n')
@@ -642,13 +638,28 @@ cppmissing() {
         HIMPORTSANDDEFINITIONS="${HIMPORTS}${HNAMESPACESTD}${HLOCALIMPORTS}${HDEFINITIONS}${HIMPORTSANDDEFSREMAINING}"
         HIMPORTSANDDEFINITIONS=$(formatmultilinetr "$HIMPORTSANDDEFINITIONS" '')
     fi
+
     HCONSTRUCTOR=$(formatmultilinetr "$HPUBLIC" '\n')
-    HCONSTRUCTORPARAMS=$(printf "$HPUBLIC" | awk "/^ *$CLSNAME\(/{print}" | sed -e "s/ *$CLSNAME(//" -e "s/);//")
     HDESTRUCTOR=''
-    CPPINCLUDES=$([ -z "$CPPINCLUDES" ] && printf "#include \"$CLSNAME.h\"\n" || printf "$CPPINCLUDES")
-    CPPCONSTRUCTOR=$([ -z "$CPPCONSTRUCTOR" ] && printf "$CLSNAME::$CLSNAME($HCONSTRUCTORPARAMS) {}" || printf "$CPPCONSTRUCTOR")
-    CPPDESTRUCTOR=$([ -z "$CPPDESTRUCTOR" ] && printf "$CLSNAME::~$CLSNAME() {}" || printf "$CPPDESTRUCTOR")
-    regexmatch "$HCLSTXTWHOLE" "~$CLSNAME\(" || CPPDESTRUCTOR=''
+
+    [ -z "$CPPINCLUDES" ] && CPPINCLUDES=$(formatmultilinetr "#include \"$CLSNAME.h\"\n")
+
+    if [ -z "$CPPCONSTRUCTOR" ] && regexmatch "$HCLSTXTWHOLE" "[^a-zA-Z]$CLSNAME\("; then
+        HCONSTRUCTORPARAMS=$(printf "$HPUBLIC" | awk "/^ *$CLSNAME\(/{print}" | sed -e "s/ *$CLSNAME(//" -e "s/);//")
+        CPPCONSTRUCTOR="$CLSNAME::$CLSNAME($HCONSTRUCTORPARAMS) {}"
+        elemadded "$CLSNAME"
+    fi
+
+    if [ -z "$CPPDESTRUCTOR" ] && regexmatch "$HCLSTXTWHOLE" "~$CLSNAME\("; then
+        CPPDESTRUCTOR="$CLSNAME::~$CLSNAME() {}"
+        elemadded "~$CLSNAME"
+    else
+        CPPDESTRUCTOR=''
+    fi
+
+    [ $NOPRINTS = false ] && printf "$ROCKET Feito!\n" || printf "Nada faltante.\n"
+
+    finalprint
 
     replacelinebreak() {
         if [ $OS = 'Darwin' ]; then

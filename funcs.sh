@@ -628,9 +628,10 @@ cppmissing() {
         HIMPORTSANDDEFINITIONS=$(formatmultilinetr "$HIMPORTSANDDEFINITIONS" '')
     fi
     HCONSTRUCTOR=$(formatmultilinetr "$HPUBLIC" '\n')
+    HCONSTRUCTORPARAMS=$(printf "$HPUBLIC" | awk "/^ *$CLSNAME\(/{print}" | sed -e "s/ *$CLSNAME(//" -e "s/);//")
     HDESTRUCTOR=''
     CPPINCLUDES=$([ -z "$CPPINCLUDES" ] && printf "#include \"$CLSNAME.h\"\n" || printf "$CPPINCLUDES")
-    CPPCONSTRUCTOR=$([ -z "$CPPCONSTRUCTOR" ] && printf "$CLSNAME::$CLSNAME($CONSTRUCTORPARAMS)$CPPCONSTRUCTORATTRIBUTION {}" || printf "$CPPCONSTRUCTOR")
+    CPPCONSTRUCTOR=$([ -z "$CPPCONSTRUCTOR" ] && printf "$CLSNAME::$CLSNAME($HCONSTRUCTORPARAMS) {}" || printf "$CPPCONSTRUCTOR")
     CPPDESTRUCTOR=$([ -z "$CPPDESTRUCTOR" ] && printf "$CLSNAME::~$CLSNAME() {}" || printf "$CPPDESTRUCTOR")
     regexmatch "$HCLSTXTWHOLE" "~$CLSNAME\(" || CPPDESTRUCTOR=''
 

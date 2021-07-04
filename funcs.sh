@@ -205,13 +205,16 @@ createstdimport() {
 }
 
 creategeneralimports() {
-    if ! [ "$2" = "$1" ] && regexmatch "$2" '^[A-Z]' && ! regexmatch "$HLOCALIMPORTS" ".*$2.*"; then
-        HLOCALIMPORTS="$HLOCALIMPORTS\n#include \"$2.h\""
-    else
-        for STDTYPE in 'string' 'vector' 'list' 'forward-list' 'deque' 'map' 'multimap' 'set'; do
-            createstdimport "$2" "$STDTYPE"
-        done
-    fi
+    SEPARATEDTYPESARRAY=(`echo ${2//[, <>\*0-9\[\]]/ }`);
+    for TYPE in "${SEPARATEDTYPESARRAY[@]}"; do
+        if ! [ "$TYPE" = "$1" ] && regexmatch "$TYPE" '^[A-Z]' && ! regexmatch "$HLOCALIMPORTS" ".*$TYPE.*"; then
+            HLOCALIMPORTS="$HLOCALIMPORTS\n#include \"$TYPE.h\""
+        else
+            for STDTYPE in 'string' 'vector' 'list' 'forward-list' 'deque' 'map' 'multimap' 'set'; do
+                createstdimport "$TYPE" "$STDTYPE"
+            done
+        fi
+    done
 }
 
 createcppattr() {
@@ -224,18 +227,13 @@ createcppattr() {
         ATTRVALUE=" = $(printf "$ATTRNAME" | sed -e "s/.*= *//g")"
         ATTRNAME=$(printf "$ATTRNAME" | sed -e "s/ *=.*//g")
     fi
-    NEWCPPSTATICATTR=''
-    SEPARATEDTYPESARRAY=(`echo ${ATTRTYPE//[, <>\*0-9\[\]]/ }`);
-    for TYPE in "${SEPARATEDTYPESARRAY[@]}"; do
-        if [ "$TYPE" = 'static' ]; then
-            ATTRTYPE=$(printf "$ATTRTYPE" | sed "s/static //")
-            STATICTYPE='static '
-            STATICPREPEND="$1::"
-            NEWCPPSTATICATTR="$ATTRTYPE ${STATICPREPEND}$ATTRNAME;\n"
-        fi
-        creategeneralimports "$1" "$TYPE"
-    done
-    CPPSTATICATTRS="${CPPSTATICATTRS}$NEWCPPSTATICATTR"
+    if regexmatch "$ATTRTYPE" 'static '; then
+        ATTRTYPE=$(printf "$ATTRTYPE" | sed "s/static //")
+        STATICTYPE='static '
+        STATICPREPEND="$1::"
+        CPPSTATICATTRS="${CPPSTATICATTRS}$ATTRTYPE ${STATICPREPEND}$ATTRNAME;\n"
+    fi
+    creategeneralimports "$1" "$ATTRTYPE"
     if regexmatch "$ATTRTYPE" '.*\[.*\].*'; then
         ATTRMAXLENGTH=$(printf "$ATTRTYPE" | sed -e "s/.*\[//g" -e "s/\]//g")
         ATTRTYPE=$(printf "$ATTRTYPE" | sed -e "s/\[.*\]//g")
@@ -261,18 +259,15 @@ createcppattr() {
 createcppmethod() {
     METHODVIRTUALTYPE=''
     METHODSTATICTYPE=''
-    SEPARATEDTYPESARRAY=(`echo ${METHODTYPE//[, <>\*0-9\[\]]/ }`);
-    for TYPE in "${SEPARATEDTYPESARRAY[@]}"; do
-        if [ "$TYPE" = 'virtual' ]; then
-            METHODTYPE=$(printf "$METHODTYPE" | sed "s/virtual //")
-            METHODVIRTUALTYPE='virtual '
-        fi
-        if [ "$TYPE" = 'static' ]; then
-            METHODTYPE=$(printf "$METHODTYPE" | sed "s/static //")
-            METHODSTATICTYPE='static '
-        fi
-        creategeneralimports "$1" "$TYPE"
-    done
+    if regexmatch "$METHODTYPE" 'virtual '; then
+        METHODTYPE=$(printf "$METHODTYPE" | sed "s/virtual //")
+        METHODVIRTUALTYPE='virtual '
+    fi
+    if regexmatch "$METHODTYPE" 'static '; then
+        METHODTYPE=$(printf "$METHODTYPE" | sed "s/static //")
+        METHODSTATICTYPE='static '
+    fi
+    creategeneralimports "$1" "$METHODTYPE"
     [ $CREATEHMETHOD = true ] && HMETHODS="$HMETHODS\n    ${METHODVIRTUALTYPE}${METHODSTATICTYPE}$METHODTYPE $METHODNAME($METHODPARAMS);"
     CPPMETHODS="${CPPMETHODS}$METHODTYPE $1::$METHODNAME($METHODPARAMS) {\n    // TODO: adicionar código\n}\n\n"
 }

@@ -208,7 +208,7 @@ createcppattr() {
         ATTRNAME=$(printf "$ATTRNAME" | sed -e "s/ *=.*//g")
     fi
     if regexmatch "$ATTRTYPE" 'static '; then
-        ATTRTYPE=${ATTRTYPE:7}
+        ATTRTYPE=$(printf "$ATTRTYPE" | sed "s/static //")
         STATICTYPE='static '
         STATICPREPEND="$1::"
         CPPSTATICATTRS="${CPPSTATICATTRS}${STATICNEWLINE}$ATTRTYPE ${STATICPREPEND}$ATTRNAME;\n"

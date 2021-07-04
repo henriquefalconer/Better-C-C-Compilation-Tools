@@ -197,6 +197,23 @@ createcppclass() {
 	END
 }
 
+createstdimport() {
+    if [ "$1" = "$2" ] && ! regexmatch "$HIMPORTS" ".*#include <$2>.*"; then
+        HIMPORTS="$HIMPORTS\n#include <$2>"
+        HNAMESPACESTD='using namespace std;'
+    fi
+}
+
+creategeneralimports() {
+    if ! [ "$2" = "$1" ] && regexmatch "$2" '^[A-Z]' && ! regexmatch "$HLOCALIMPORTS" ".*$2.*"; then
+        HLOCALIMPORTS="$HLOCALIMPORTS\n#include \"$2.h\""
+    else
+        for STDTYPE in 'string' 'vector' 'list' 'forward-list' 'deque' 'map' 'multimap' 'set'; do
+            createstdimport "$2" "$STDTYPE"
+        done
+    fi
+}
+
 createcppattr() {
     ATTRVALUE=''
     ATTRNAMEAPPEND=''
@@ -207,25 +224,25 @@ createcppattr() {
         ATTRVALUE=" = $(printf "$ATTRNAME" | sed -e "s/.*= *//g")"
         ATTRNAME=$(printf "$ATTRNAME" | sed -e "s/ *=.*//g")
     fi
-    if regexmatch "$ATTRTYPE" 'static '; then
-        ATTRTYPE=$(printf "$ATTRTYPE" | sed "s/static //")
-        STATICTYPE='static '
-        STATICPREPEND="$1::"
-        CPPSTATICATTRS="${CPPSTATICATTRS}${STATICNEWLINE}$ATTRTYPE ${STATICPREPEND}$ATTRNAME;\n"
-    fi
-    if regexmatch "$ATTRTYPE" '.*string.*' && ! regexmatch "$HIMPORTS" '.*#include <string>.*'; then
-        HIMPORTS="$HIMPORTS\n#include <string>\nusing namespace std;"
-    elif regexmatch "$ATTRTYPE" '.*\[.*\].*'; then
+    NEWCPPSTATICATTR=''
+    SEPARATEDTYPESARRAY=(`echo ${ATTRTYPE//[, <>\*0-9\[\]]/ }`);
+    for TYPE in "${SEPARATEDTYPESARRAY[@]}"; do
+        if [ "$TYPE" = 'static' ]; then
+            ATTRTYPE=$(printf "$ATTRTYPE" | sed "s/static //")
+            STATICTYPE='static '
+            STATICPREPEND="$1::"
+            NEWCPPSTATICATTR="$ATTRTYPE ${STATICPREPEND}$ATTRNAME;\n"
+        fi
+        creategeneralimports "$1" "$TYPE"
+    done
+    CPPSTATICATTRS="${CPPSTATICATTRS}$NEWCPPSTATICATTR"
+    if regexmatch "$ATTRTYPE" '.*\[.*\].*'; then
         ATTRMAXLENGTH=$(printf "$ATTRTYPE" | sed -e "s/.*\[//g" -e "s/\]//g")
         ATTRTYPE=$(printf "$ATTRTYPE" | sed -e "s/\[.*\]//g")
         UPPERCASE=$(printf "$ATTRNAME" | tr '[:lower:]' '[:upper:]')
         HDEFINITIONS="$HDEFINITIONS\n#define MAXIMO_$UPPERCASE $ATTRMAXLENGTH"
         ATTRNAMEAPPEND="[MAXIMO_${UPPERCASE}]"
         ATTRNAMEPREPEND="*"
-    fi
-    if regexmatch "$ATTRTYPE" '^[A-Z]'; then
-        HLOCALIMPORT=$(printf "$ATTRTYPE" | sed -e "s/\*//g")
-        [[ ! $HLOCALIMPORT = $1 ]] && ! regexmatch "$HLOCALIMPORTS" ".*$HLOCALIMPORT.*" && HLOCALIMPORTS="$HLOCALIMPORTS\n#include \"$HLOCALIMPORT.h\""
     fi
     CAPITALIZED=$(perl -lne 'use open qw(:std :utf8); print ucfirst' <<<$ATTRNAME)
     if ([ $CREATEHSETTER = true ] || [ $CREATECPPSETTER = true ]) && ! regexmatch "$ATTRTYPE" '^const ' && [ -z "$ATTRNAMEPREPEND" ] && [ -z "$STATICTYPE" ]; then
@@ -244,22 +261,18 @@ createcppattr() {
 createcppmethod() {
     METHODVIRTUALTYPE=''
     METHODSTATICTYPE=''
-    if regexmatch "$METHODTYPE" 'virtual '; then
-        METHODTYPE=$(printf "$METHODTYPE" | sed "s/virtual //")
-        METHODVIRTUALTYPE='virtual '
-    fi
-    if regexmatch "$METHODTYPE" 'static '; then
-        METHODTYPE=$(printf "$METHODTYPE" | sed "s/static //")
-        METHODSTATICTYPE='static '
-    fi
-    if (regexmatch "$METHODTYPE" '.*string.*' || regexmatch "$METHODPARAMS" '.*string.*') && ! regexmatch "$HIMPORTS" '.*#include <string>.*'; then
-        HIMPORTS="$HIMPORTS\n#include <string>\nusing namespace std;"
-    fi
-    # TODO: adicionar local import se existir em METHODPARAMS
-    if regexmatch "$METHODTYPE" '^[A-Z]'; then
-        HLOCALIMPORT=$(printf "$METHODTYPE" | sed -e "s/\*//g")
-        [[ ! $HLOCALIMPORT = $1 ]] && ! regexmatch "$HLOCALIMPORTS" ".*$HLOCALIMPORT.*" && HLOCALIMPORTS="$HLOCALIMPORTS\n#include \"$HLOCALIMPORT.h\""
-    fi
+    SEPARATEDTYPESARRAY=(`echo ${METHODTYPE//[, <>\*0-9\[\]]/ }`);
+    for TYPE in "${SEPARATEDTYPESARRAY[@]}"; do
+        if [ "$TYPE" = 'virtual' ]; then
+            METHODTYPE=$(printf "$METHODTYPE" | sed "s/virtual //")
+            METHODVIRTUALTYPE='virtual '
+        fi
+        if [ "$TYPE" = 'static' ]; then
+            METHODTYPE=$(printf "$METHODTYPE" | sed "s/static //")
+            METHODSTATICTYPE='static '
+        fi
+        creategeneralimports "$1" "$TYPE"
+    done
     [ $CREATEHMETHOD = true ] && HMETHODS="$HMETHODS\n    ${METHODVIRTUALTYPE}${METHODSTATICTYPE}$METHODTYPE $METHODNAME($METHODPARAMS);"
     CPPMETHODS="${CPPMETHODS}$METHODTYPE $1::$METHODNAME($METHODPARAMS) {\n    // TODO: adicionar código\n}\n\n"
 }
@@ -270,6 +283,7 @@ cppclass() {
     fi
     printf "\nCriando a classe ${TTYBOLD}$1$TTYRESET! $FACTORY\n\n"
     HIMPORTS=''
+    HNAMESPACESTD=''
     HLOCALIMPORTS=''
     HPARENTIMPORTS=''
     HDEFINITIONS=''
@@ -323,7 +337,8 @@ cppclass() {
             [ "$CPARENTCLASSNAME" = '' ] && break
             CPPCONSTRUCTORPARENTATTRIBUTION="$CPPCONSTRUCTORPARENTATTRIBUTION${CONSTRUCTORPARENTCOMMA}\n    $CPARENTCLASSNAME()"
             if [ $STDEXCEPTADDED = false ] && regexmatch "$CPARENTCLASSNAME" "$STDEXCEPT"; then
-                HIMPORTS="\n#include <stdexcept>$HIMPORTS$(regexmatch "$HIMPORTS" '.*using namespace std;.*' || printf '\nusing namespace std;')"
+                HIMPORTS="\n#include <stdexcept>$HIMPORTS"
+                HNAMESPACESTD='using namespace std;'
                 STDEXCEPTADDED=true
             else
                 HPARENTIMPORTS="$HPARENTIMPORTS\n#include \"$CPARENTCLASSNAME.h\""
@@ -334,10 +349,11 @@ cppclass() {
         [ ! -z "$CPPCONSTRUCTORATTRIBUTION" ] && CPPCONSTRUCTORPARENTATTRIBUTION="${CPPCONSTRUCTORPARENTATTRIBUTION}$CONSTRUCTORPARENTCOMMA"
     fi
     HIMPORTS=$(formatmultilinetr "$HIMPORTS" '\n')
+    HNAMESPACESTD=$(formatmultilinetr "$HNAMESPACESTD" '\n')
     HLOCALIMPORTS=$(formatmultilinetr "$HLOCALIMPORTS" '\n')
     HPARENTIMPORTS=$(formatmultilinetr "$HPARENTIMPORTS" '\n')
     HDEFINITIONS=$(formatmultilinetr "$HDEFINITIONS" '\n')
-    HIMPORTSANDDEFINITIONS="${HIMPORTS}${HLOCALIMPORTS}${HPARENTIMPORTS}${HDEFINITIONS}"
+    HIMPORTSANDDEFINITIONS="${HIMPORTS}${HNAMESPACESTD}${HLOCALIMPORTS}${HPARENTIMPORTS}${HDEFINITIONS}"
     HPRIVATEANDPROTECTED=$(formatmultilinetr "$HATTRS" '   private:')
     HCONSTRUCTOR=$(formatmultilinetr "$1($CONSTRUCTORPARAMS);" '\n    ')
     CPPCONSTRUCTORATTRIBUTION=$(formatmultilinetr "${CPPCONSTRUCTORPARENTATTRIBUTION}$CPPCONSTRUCTORATTRIBUTION" ':')
@@ -677,7 +693,7 @@ chelp() {
     printcommand 'crun' '[nome do arquivo.c]' "compila e roda um código em C (use \\${TTYBOLD}TAB\\$TTYRESET para completar o nome do arquivo ao escrever na linha de comando)."
     printcommand 'cppnew' '[nome do projeto]' 'gera um novo projeto de C++ na pasta atual, com um template inicial.'
     printcommand 'cppclass' '[nome da classe]' "gera um par de arquivos .h e .cpp na pasta atual, a partir das informações dadas na linha de comando, além de automaticamente criar setters e getters para todos os atributos."
-    printcommand 'cppmissing' '[nome da classe]' "analisa o arquivo de cabeçalho da classe, gerando todos os atributos e métodos faltantes no arquivo de implementação, assim como opcionalmente criando getters e setters para todos seus atributos."
+    printcommand 'cppmissing' '[nome da classe]' "analisa um arquivo de cabeçalho da classe já existente, gerando todos os atributos e métodos faltantes no respectivo arquivo de implementação, assim como opcionalmente criando getters e setters para todos seus atributos."
     printcommand 'cpprun' '' "compila todos os arquivos C++ da pasta atual, rodando a função main. Deve ser rodado na pasta do projeto. \\${TTYBOLD}IMPORTANTE:\\$TTYRESET se a pasta atual possuir mais de um projeto, ocorrerá um erro."
     printcommand 'out' '' "roda o último código em C/C++ compilado com \\${LIGHTBLUE}crun\\$NOCOLOR ou \\${LIGHTBLUE}cpprun\\$NOCOLOR na pasta atual."
     printcommand 'ctempl' '[nome do arquivo.c]' 'redefine o template inicial para arquivos C.'

@@ -488,9 +488,9 @@ cppmissing() {
     HNAMESPACESTD=$(formatmultilinetr "$HNAMESPACESTD" '')
     HIMPORTSANDDEFSTEMP=$(printf "$HIMPORTSANDDEFSTEMP" | awk '!/^using namespace std;$/{print}')
 
-    HLOCALIMPORTS=$(printf "$HIMPORTSANDDEFSTEMP" | awk '/^#include "|class [A-Za-z]*;/{print}')
+    HLOCALIMPORTS=$(printf "$HIMPORTSANDDEFSTEMP" | awk '/^#include "|^class [A-Za-z]*;/{print}')
     HLOCALIMPORTS=$(formatmultilinetr "$HLOCALIMPORTS" '\n')
-    HIMPORTSANDDEFSTEMP=$(printf "$HIMPORTSANDDEFSTEMP" | awk '!/^#include "|class [A-Za-z]*;/{print}')
+    HIMPORTSANDDEFSTEMP=$(printf "$HIMPORTSANDDEFSTEMP" | awk '!/^#include "|^class [A-Za-z]*;/{print}')
 
     HDEFINITIONS=$(printf "$HIMPORTSANDDEFSTEMP" | awk '/^#define /{print}')
     HDEFINITIONS=$(formatmultilinetr "$HDEFINITIONS" '\n')

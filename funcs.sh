@@ -279,7 +279,8 @@ createcppmethod() {
         METHODTYPE=$(printf "$METHODTYPE" | sed "s/static //")
         METHODSTATICTYPE='static '
     fi
-    creategeneralimports "$1" "$METHODTYPE"
+    PARAMTYPES=$(printf "$METHODPARAMS" | sed -e 's/ [a-zA-Z]\{1,\},/ /g' -e 's/ [a-zA-Z]\{1,\}$/ /')
+    creategeneralimports "$1" "$METHODTYPE $PARAMTYPES"
     [ $CREATEHMETHOD = true ] && HMETHODS="$HMETHODS\n    ${METHODVIRTUALTYPE}${METHODSTATICTYPE}$METHODTYPE $METHODNAME($METHODPARAMS);"
     CPPMETHODS="${CPPMETHODS}$METHODTYPE $1::$METHODNAME($METHODPARAMS) {\n    // TODO: adicionar código\n}\n\n"
 }
@@ -603,12 +604,15 @@ cppmissing() {
             regexmatch "$LINE" "$CLSNAME\(" && continue
             METHODNAME=$(printf "$LINE" | sed -e "s/(.*//g" -e "s/[^ ]* //g")
             METHODTYPE=$(printf "$LINE" | sed "s/ \{1,\}$METHODNAME(.*//g")
-            [ $CREATEIMPORTS = true ] && creategeneralimports "$1" "$METHODTYPE"
+            METHODPARAMS=$(printf "$LINE" | sed -e "s/.*(//g" -e "s/).*//g")
+            if [ $CREATEIMPORTS = true ]; then 
+                PARAMTYPES=$(printf "$METHODPARAMS" | sed -e 's/ [a-zA-Z]\{1,\},/ /g' -e 's/ [a-zA-Z]\{1,\}$/ /')
+                creategeneralimports "$CLSNAME" "$METHODTYPE $PARAMTYPES"
+            fi
             # Se já estiver implementado, ignorar
             CPPAMALGOM="$CPPCLSTXTWHOLE\n$CPPGETTERS\n$CPPSETTERS"
             regexmatch "$CPPAMALGOM" "$CLSNAME::$METHODNAME\(" && continue
             elemadded "${METHODNAME}"
-            METHODPARAMS=$(printf "$LINE" | sed -e "s/.*(//g" -e "s/).*//g")
             CREATEHMETHOD=false
             createcppmethod "$CLSNAME"
         fi

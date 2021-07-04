@@ -67,7 +67,7 @@ savefuncs() {
     printf "\n$BETTERCCPPEND\n" >>"$1"
     printf " Feito!\n\n"
     printf "3/3 $SAVEI Salvando-os em ${LIGHTBLUE}$1${NOCOLOR}..."
-    sed -i -e "s/BETTERCCPPVERS='X.X.X'/\n\nBETTERCCPPVERS='$LATESTVERSIONNAME'/g" "$1"
+    sed -i -e "s/BETTERCCPPVERS='X.X.X'/\nBETTERCCPPVERS='$LATESTVERSIONNAME'/g" "$1"
     printf " Salvos!\n\n"
 }
 

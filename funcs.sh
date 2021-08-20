@@ -411,7 +411,7 @@ cppmissing() {
     PRINTIMPORTS=$CREATEIMPORTS
 
     # Em Windows, converter para LF
-    if [[ "$OS" != "Darwin" && "$OS" != "Linux" ]]; then
+    if command -v dos2unix &> /dev/null; then
         dos2unix -q "$1.h"
         dos2unix -q "$1.cpp"
     fi

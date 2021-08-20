@@ -14,7 +14,7 @@ Ferramentas de linha de comando para programação em C/C++ para Linux, macOS e 
 
 ### Linux
 
-1. Instalar o compilador GCC com o comando `sudo apt install build-essential`
+1. Instalar o compilador GCC com o comando `sudo apt update && sudo apt install build-essential`
 
 ### macOS
 
@@ -24,13 +24,16 @@ Ferramentas de linha de comando para programação em C/C++ para Linux, macOS e 
 4. Definir o **zsh** como o terminal padrão do VSCode
 5. Fechar e abrir o VSCode
 
-### Windows
+### Windows (com WSL)
 
-1. Baixar o [Git Bash](https://git-scm.com/download/win) (mesmo se já tiver, baixe-o novamente para atualizá-lo)
-2. Instalar o compilador GCC [seguindo estes passos](https://dev.to/gamegods3/how-to-install-gcc-in-windows-10-the-easier-way-422j)
-3. Baixar pacote de ferramentas GNU utilizando o [Gow (Gnu On Windows)](https://github.com/bmatzelle/gow/releases/download/v0.8.0/Gow-0.8.0.exe)
-4. Definir o **Git Bash** como o terminal padrão do VSCode
-5. Fechar e abrir o VSCode
+1. Abrir o Powershell como administrador (selecionando a opção com o botão direito)
+2. Apertando o botão direito, colar e rodar o comando `dism.exe /online /enable-feature /featurename:Microsoft-Windows-Subsystem-Linux /all /norestart` (conforme escrito no [site oficial da Microsoft sobre a instalação do WSL](https://docs.microsoft.com/pt-br/windows/wsl/install-win10))
+3. Abrir a Microsoft Store e instalar uma distribuição de Linux qualquer (Debian, por exemplo)
+4. Reiniciar máquina para que as alterações surtam efeito
+5. Pesquisando no menu Iniciar, abrir a distribuição instalada, esperar instalação final e seguir os passos descritos na janela (Obs.: quando forem pedidos usuário e senha, pode usar o mesmo usuário do seu computador e usar uma senha qualquer – mas lembre-se que você precisará de tal senha mais pra frente)
+6. Em seguida, ainda na mesma janela, instalar comandos básicos do Linux com `sudo apt update && sudo apt install curl build-essential zip dos2unix` (inserindo a mesma senha definida no passo anterior)
+7. Após o processo ser finalizado, abrir o VSCode e definir o **wsl** como o terminal padrão do editor
+6. Fechar e abrir o VSCode
 
 **Obs.:** Para alterar o terminal padrão do VSCode, [basta seguir estes passos](https://stackoverflow.com/a/45899693)
 

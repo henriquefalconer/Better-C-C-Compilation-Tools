@@ -150,7 +150,7 @@ cppnew() {
             finalprint
         fi
     }
-    if yesorno "\nGostaria de incluir o ${LIGHTBLUE}iofuncs${NOCOLOR}? (funções como print, input etc.)"; then
+    if ! [ -z $ALLOWIOFUNCS ] && [ $ALLOWIOFUNCS = true ] && yesorno "\nGostaria de incluir o ${LIGHTBLUE}iofuncs${NOCOLOR}? (funções como print, input etc.)"; then
         createproject "$1" "$HOME/.ccpptemplates/cpp/withio"
     else
         createproject "$1" "$HOME/.ccpptemplates/cpp/raw"
@@ -411,7 +411,7 @@ cppmissing() {
     PRINTIMPORTS=$CREATEIMPORTS
 
     # Em Windows, converter para LF
-    if [[ "$OS" != "Darwin" && "$OS" != "Linux" ]]; then
+    if command -v dos2unix &> /dev/null; then
         dos2unix -q "$1.h"
         dos2unix -q "$1.cpp"
     fi

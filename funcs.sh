@@ -150,7 +150,7 @@ cppnew() {
             finalprint
         fi
     }
-    if yesorno "\nGostaria de incluir o ${LIGHTBLUE}iofuncs${NOCOLOR}? (funções como print, input etc.)"; then
+    if ! [ -z $ALLOWIOFUNCS ] && [ $ALLOWIOFUNCS = true ] && yesorno "\nGostaria de incluir o ${LIGHTBLUE}iofuncs${NOCOLOR}? (funções como print, input etc.)"; then
         createproject "$1" "$HOME/.ccpptemplates/cpp/withio"
     else
         createproject "$1" "$HOME/.ccpptemplates/cpp/raw"

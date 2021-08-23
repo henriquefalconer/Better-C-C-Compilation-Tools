@@ -58,6 +58,10 @@ Rode o seguinte comando no terminal do VSCode:
 ```
 Em seguida, feche e abra o VSCode, e rode `chelp` para verificar se foi instalado
 
+<br/>
+
+> **Dica:** Aproveite e já baixe a extensão **C/C++** da Microsoft na aba de extensões do VSCode para que o editor reconheça a linguagem que você está escrevendo.
+
 ## Como utilizar
 
 1. Abra o VSCode na pasta onde você criará seus arquivos C/C++ e rode `hidevscc` para configurar o diretório (apenas necessário da primeira vez que você utiliza um diretório)

@@ -686,23 +686,9 @@ hidevscc() {
     finalprint
 }
 
-cppcommentmain() {
-    awk 'BEGIN{ brackets=999 } /int main()/{ print "/*"; brackets=0 } /\{/{ brackets++ } /\}/{ brackets-- } brackets==0{ print "}\n*/"; stop=1; brackets=999 } stop==0{print}' $1 >$2
-}
-
-cppmain() {
-    if checkparam "$1" "Você deve passar o nome do arquivo como parâmetro."; then
-        return 1
-    fi
-    COMMFILENAME="commented_$1"
-    cppcommentmain "$1" "$COMMFILENAME"
-    printf "\nO arquivo ${LIGHTBLUE}$COMMFILENAME${NOCOLOR} foi criado na sua pasta! $SUCCESS\n"
-    finalprint
-}
-
 cppzipsinglefile() {
     if [ $3 = true ]; then
-        cppcommentmain "$1" tmp
+        awk 'BEGIN{ brackets=999 } /int main()/{ print "/*"; brackets=0 } /\{/{ brackets++ } /\}/{ brackets-- } brackets==0{ print "}\n*/"; stop=1; brackets=999 } stop==0{print}' $1 >tmp
         if ! diff "$1" tmp >> /dev/null; then
             printf "Função main encontrada em ${LIGHTBLUE}$1${NOCOLOR}\n"
         fi

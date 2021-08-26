@@ -777,6 +777,7 @@ chelp() {
     printcommand 'cpprun' '' "compila todos os arquivos C++ da pasta atual, rodando a função main. Deve ser rodado na pasta do projeto. \\${TTYBOLD}IMPORTANTE:\\$TTYRESET se a pasta atual possuir mais de um projeto, ocorrerá um erro."
     printcommand 'out' '' "roda o último código em C/C++ compilado com \\${LIGHTBLUE}crun\\$NOCOLOR ou \\${LIGHTBLUE}cpprun\\$NOCOLOR na pasta atual."
     printcommand 'ctempl' '[nome do arquivo.c]' 'redefine o template inicial para arquivos C.'
+    printcommand 'cppmain' '[nome do arquivo.cpp]' "comenta a função main do arquivo, criando uma cópia do arquivo em questão."
     printcommand 'cppzip' '' "localiza e comenta o main do projeto, criando o \\${TTYBOLD}files.zip\\$TTYRESET com todos os arquivos .h e .cpp da pasta atual."
     printcommand 'hidevscc' '' 'caso esteja usando VS Code, este comando torna invisíveis os arquivos de compilação para não poluir a área de trabalho.'
     printcommand 'cupdate' '' "baixa e atualiza o \\${TTYBOLD}Better C/C++ Tools\\$TTYRESET para a última versão disponível."

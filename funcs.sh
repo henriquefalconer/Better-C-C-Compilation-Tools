@@ -37,7 +37,7 @@ getlatestversiondata() {
 # Realiza o curl para obter o JSON das informações da última versão do projeto.
 crefreshversions() {
     SECONDSSINCELASTRUN=$(($(date +%s) - LASTTIMECREFRESHRUN))
-    if [[ "$SECONDSSINCELASTRUN" -gt 3600 || $1 == 'force' ]]; then
+    if [[ -z $LASTTIMECREFRESHRUN || "$SECONDSSINCELASTRUN" -gt 10 || $1 == 'force' ]]; then
         LASTTIMECREFRESHRUN=$(date +%s)
         CCPPRELEASES=$(curl -s 'https://api.github.com/repos/henriquefalconer/better-c-cpp-tools/releases/latest')
         if regexmatch "$CCPPRELEASES" ".*API rate limit exceeded.*"; then
@@ -52,7 +52,7 @@ crefreshversions() {
 
 ccheckupdate() {
     crefreshversions
-    if ! [ -z $CREFRESHFAILED ] && [ $CREFRESHFAILED = false ]; then
+    if [ -z $CREFRESHFAILED ] || [ $CREFRESHFAILED = false ]; then
         if [ "$LATESTVERSIONNAME" != "$BETTERCCPPVERS" ]; then
             printf "\n${TTYBOLD}Better C/C++ Tools v${LATESTVERSIONNAME}$TTYRESET já está disponível! Rode ${LIGHTBLUE}cupdate$1$NOCOLOR para visualizar as novas funcionalidades $ROCKET\n"
             finalprint

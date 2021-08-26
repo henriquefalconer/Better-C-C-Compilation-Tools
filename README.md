@@ -5,7 +5,7 @@ Ferramentas de linha de comando para programação em C/C++ para Linux, macOS e 
 ## Funcionalidades atuais
 
 - Criar novos arquivos C/C++ com templates iniciais, à escolha do usuário
-- Compilar e executar códigos em C/C++, sem precisar lembrar de comandos gigantes do `gcc` ou `g++`
+- Compilar e executar códigos em C/C++ no VSCode, sem precisar lembrar de comandos gigantes do `gcc` ou `g++`
 - Gerar arquivos de classe rapidamente, automaticamente criando setters e getters para todos os seus atributos
 - Automaticamente adicionar atributos, métodos e importações faltantes de uma classe
 - Comentar a função `main` do arquivo principal e criar um zip dos arquivos do projeto com apenas um comando

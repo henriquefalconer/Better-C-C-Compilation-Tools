@@ -60,4 +60,23 @@ Em seguida, feche e abra o VSCode, e rode `chelp` para verificar se foi instalad
 
 <br/>
 
-> **Dica:** já aproveite e rode `hidevscc` se esta for a pasta em que você criará seus arquivos C/C++.
+> **Dica:** Aproveite e já baixe a extensão **C/C++** da Microsoft na aba de extensões do VSCode para que o editor reconheça a linguagem que você está escrevendo.
+
+## Como utilizar
+
+1. Abra o VSCode na pasta onde você criará seus arquivos C/C++ e rode `hidevscc` para configurar o diretório (apenas necessário da primeira vez que você utiliza um diretório)
+2. Em seguida, rode `cppnew [nome do projeto]` para criar seu novo projeto
+3. Rode `cd [nome do projeto]` para entrar na pasta do projeto criado
+4. Faça as modificações necessárias no novo projeto
+5. Rode `cpprun` para testar suas modificações
+6. Repita os passos 4 e 5 até seu projeto estar finalizado
+
+#### Por fim, para realizar a entrega do projeto:
+
+- Caso o projeto contenha apenas um arquivo: rode `cppmain` para criar um arquivo duplicado com a função `main` comentada
+- Caso o projeto contenha vários arquivos: rode `cppzip` para opcionalmente comentar a função `main` e automaticamente criar um zip de todos os arquivos `.h` e `.cpp` do projeto
+
+#### E então, para criar um novo projeto:
+
+1. Caso você esteja na pasta de algum projeto, rode `cd ..` para voltar ao diretório geral de projetos (ou feche e abra o VSCode)
+2. E por fim, rode `cppnew [nome do projeto]` e `cd [nome do projeto]` novamente para criar e entrar no seu novo projeto

@@ -52,7 +52,7 @@ crefreshversions() {
 
 ccheckupdate() {
     crefreshversions
-    if [ $CREFRESHFAILED = false ]; then
+    if ! [ -z $CREFRESHFAILED ] && [ $CREFRESHFAILED = false ]; then
         if [ "$LATESTVERSIONNAME" != "$BETTERCCPPVERS" ]; then
             printf "\n${TTYBOLD}Better C/C++ Tools v${LATESTVERSIONNAME}$TTYRESET já está disponível! Rode ${LIGHTBLUE}cupdate$1$NOCOLOR para visualizar as novas funcionalidades $ROCKET\n"
             finalprint

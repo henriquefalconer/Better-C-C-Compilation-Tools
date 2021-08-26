@@ -73,8 +73,8 @@ Em seguida, feche e abra o VSCode, e rode `chelp` para verificar se foi instalad
 
 #### Por fim, para realizar a entrega do projeto:
 
-- Caso o projeto contenha apenas um arquivo: rode `cppmain` para criar um arquivo duplicado com a função `main` comentada
-- Caso o projeto contenha vários arquivos: rode `cppzip` para opcionalmente comentar a função `main` e automaticamente criar um zip de todos os arquivos `.h` e `.cpp` do projeto
+- Caso o projeto contenha apenas um arquivo: comente a função main do arquivo e realize a entrega
+- Caso o projeto contenha vários arquivos: rode `cppzip` para opcionalmente comentar a função `main` e criar automaticamente um zip de todos os arquivos `.h` e `.cpp` do projeto
 
 #### E então, para criar um novo projeto:
 

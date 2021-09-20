@@ -62,7 +62,7 @@ Em seguida, feche e abra o VSCode, e rode `chelp` para verificar se foi instalad
 
 ## Como utilizar
 
-1. Abra o VSCode na pasta onde você criará seus arquivos C/C++ e rode `hidevscc` para configurar o diretório (apenas necessário da primeira vez que você utiliza um diretório)
+1. Abra o VSCode na pasta onde você criará seus arquivos C/C++ e rode `hidevscc` para configurar o diretório (apenas necessário da primeira vez que você utiliza uma pasta)
 2. Em seguida, rode `cppnew [nome do projeto]` para criar seu novo projeto
 3. Rode `cd [nome do projeto]` para entrar na pasta do projeto criado
 4. Faça as modificações necessárias no novo projeto

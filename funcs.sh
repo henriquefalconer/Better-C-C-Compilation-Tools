@@ -557,6 +557,7 @@ cppmissing() {
 
     INSIDECLASS=false
     NOPRINTS=true
+    INSIDECOMMENT=false
 
     elemadded() {
         [ $NOPRINTS = true ] && printf '\n' && NOPRINTS=false
@@ -566,64 +567,68 @@ cppmissing() {
     while read -r LINE; do
         regexmatch "$LINE" "class ${CLSNAME}[^;]" && INSIDECLASS=true
         regexmatch "$LINE" '\};$' && INSIDECLASS=false
-        [ $INSIDECLASS = false ] || [ -z "$LINE" ] || regexmatch "$LINE" "^class ${CLSNAME}[^;]|^private:|^protected:|^public:|^//" && continue;
-        # Se for um atributo
-        if ! regexmatch "$LINE" '\('; then
-            ATTRNAME=$(printf "$LINE" | sed -e "s/\( *=.*\)*;$//g" -e "s/[^ ]* //g")
-            ATTRTYPEPOSTPEND=''
-            if regexmatch "$ATTRNAME" '.*\[.*\].*'; then
-                ATTRNAME=$(printf "$ATTRNAME" | sed "s/\[.*\]//g")
-                ATTRTYPEPOSTPEND='[]'
+        regexmatch "$LINE" '^/\*' && INSIDECOMMENT=true
+        if [ $INSIDECLASS = true ] && [ $INSIDECOMMENT = false ] && ! [ -z "$LINE" ] && ! regexmatch "$LINE" "^class ${CLSNAME}[^;]|^private:|^protected:|^public:|^//"; then
+            LINE=$(printf "$LINE" | sed -e "s/\/\/.*//" -e "s/\/\*.*\*\///" -e "s/ *$//" -e "s/^ *//")
+            # Se for um atributo
+            if ! regexmatch "$LINE" '\('; then
+                ATTRNAME=$(printf "$LINE" | sed -e "s/\( *=.*\)*;$//g" -e "s/[^ ]* //g")
+                ATTRTYPEPOSTPEND=''
+                if regexmatch "$ATTRNAME" '.*\[.*\].*'; then
+                    ATTRNAME=$(printf "$ATTRNAME" | sed "s/\[.*\]//g")
+                    ATTRTYPEPOSTPEND='[]'
+                fi
+                CAPITALIZED=$(perl -lne 'use open qw(:std :utf8); print ucfirst' <<<$ATTRNAME)
+                ATTRTYPE="$(printf "$LINE" | sed "s/ \{1,\}$ATTRNAME.*//g")$ATTRTYPEPOSTPEND"
+                CREATECPPGETTER=false
+                if ! regexmatch "$CPPCLSTXTWHOLE" "$CLSNAME::get$CAPITALIZED\(" && [ $CREATEGETTERS = true ]; then
+                    elemadded "get${CAPITALIZED}"
+                    CREATECPPGETTER=true
+                fi
+                CREATECPPSETTER=false
+                if ! regexmatch "$ATTRTYPE" "static |const " && ! regexmatch "$CPPCLSTXTWHOLE" "$CLSNAME::set$CAPITALIZED\(" && [ $CREATESETTERS = true ]; then
+                    elemadded "set${CAPITALIZED}"
+                    CREATECPPSETTER=true
+                fi
+                CREATEHGETTER=false
+                if ! regexmatch "$HCLSTXTWHOLE" "get$CAPITALIZED\(" && [ $CREATEGETTERS = true ]; then
+                    [ $CREATECPPGETTER = false ] && elemadded "get${CAPITALIZED}"
+                    CREATEHGETTER=true
+                fi
+                CREATEHSETTER=false
+                if ! regexmatch "$ATTRTYPE" "static |const " && ! regexmatch "$HCLSTXTWHOLE" "set$CAPITALIZED\(" && [ $CREATESETTERS = true ]; then
+                    [ $CREATECPPSETTER = false ] && elemadded "set${CAPITALIZED}"
+                    CREATEHSETTER=true
+                fi
+                CREATESTATICATTR=false
+                TYPEWITHOUTSTATIC=$(printf "$ATTRTYPE" | sed "s/static //")
+                if regexmatch "$ATTRTYPE" "static " && ! regexmatch "$CPPCLSTXTWHOLE" "$TYPEWITHOUTSTATIC $CLSNAME::$ATTRNAME"; then
+                    elemadded "${ATTRNAME}"
+                    CREATESTATICATTR=true
+                fi
+                if [ $CREATEIMPORTS = true ] || [ $CREATECPPGETTER = true ] || [ $CREATECPPSETTER = true ] || [ $CREATEHGETTER = true ] || [ $CREATEHSETTER = true ] || [ $CREATESTATICATTR = true ]; then
+                    createcppattr "$CLSNAME"
+                fi
+            # Se for um método
+            else
+                # Se for construtor ou destrutor, ignorar
+                METHODNAME=$(printf "$LINE" | sed -e "s/(.*//g" -e "s/[^ ]* //g")
+                METHODTYPE=$(printf "$LINE" | sed -e "s/ \{1,\}$METHODNAME(.*//g" -e "s/^$METHODNAME(.*//g")
+                METHODPARAMS=$(printf "$LINE" | sed -e "s/.*(//g" -e "s/).*//g")
+                if [ $CREATEIMPORTS = true ]; then 
+                    PARAMTYPES=$(printf "$METHODPARAMS" | sed -e 's/ [a-zA-Z]\{1,\},/ /g' -e 's/ [a-zA-Z]\{1,\}$/ /')
+                    creategeneralimports "$CLSNAME" "$METHODTYPE $PARAMTYPES"
+                fi
+                regexmatch " $LINE" "[ ~]$CLSNAME\(" && continue
+                # Se já estiver implementado, ignorar
+                CPPAMALGOM="$CPPCLSTXTWHOLE\n$CPPGETTERS\n$CPPSETTERS"
+                regexmatch "$CPPAMALGOM" "$CLSNAME::$METHODNAME\(" && continue
+                elemadded "${METHODNAME}"
+                CREATEHMETHOD=false
+                createcppmethod "$CLSNAME"
             fi
-            CAPITALIZED=$(perl -lne 'use open qw(:std :utf8); print ucfirst' <<<$ATTRNAME)
-            ATTRTYPE="$(printf "$LINE" | sed "s/ \{1,\}$ATTRNAME.*//g")$ATTRTYPEPOSTPEND"
-            CREATECPPGETTER=false
-            if ! regexmatch "$CPPCLSTXTWHOLE" "$CLSNAME::get$CAPITALIZED\(" && [ $CREATEGETTERS = true ]; then
-                elemadded "get${CAPITALIZED}"
-                CREATECPPGETTER=true
-            fi
-            CREATECPPSETTER=false
-            if ! regexmatch "$ATTRTYPE" "static |const " && ! regexmatch "$CPPCLSTXTWHOLE" "$CLSNAME::set$CAPITALIZED\(" && [ $CREATESETTERS = true ]; then
-                elemadded "set${CAPITALIZED}"
-                CREATECPPSETTER=true
-            fi
-            CREATEHGETTER=false
-            if ! regexmatch "$HCLSTXTWHOLE" "get$CAPITALIZED\(" && [ $CREATEGETTERS = true ]; then
-                [ $CREATECPPGETTER = false ] && elemadded "get${CAPITALIZED}"
-                CREATEHGETTER=true
-            fi
-            CREATEHSETTER=false
-            if ! regexmatch "$ATTRTYPE" "static |const " && ! regexmatch "$HCLSTXTWHOLE" "set$CAPITALIZED\(" && [ $CREATESETTERS = true ]; then
-                [ $CREATECPPSETTER = false ] && elemadded "set${CAPITALIZED}"
-                CREATEHSETTER=true
-            fi
-            CREATESTATICATTR=false
-            TYPEWITHOUTSTATIC=$(printf "$ATTRTYPE" | sed "s/static //")
-            if regexmatch "$ATTRTYPE" "static " && ! regexmatch "$CPPCLSTXTWHOLE" "$TYPEWITHOUTSTATIC $CLSNAME::$ATTRNAME"; then
-                elemadded "${ATTRNAME}"
-                CREATESTATICATTR=true
-            fi
-            if [ $CREATEIMPORTS = true ] || [ $CREATECPPGETTER = true ] || [ $CREATECPPSETTER = true ] || [ $CREATEHGETTER = true ] || [ $CREATEHSETTER = true ] || [ $CREATESTATICATTR = true ]; then
-                createcppattr "$CLSNAME"
-            fi
-        # Se for um método
-        else
-            # Se for construtor ou destrutor, ignorar
-            METHODNAME=$(printf "$LINE" | sed -e "s/(.*//g" -e "s/[^ ]* //g")
-            METHODTYPE=$(printf "$LINE" | sed -e "s/ \{1,\}$METHODNAME(.*//g" -e "s/^$METHODNAME(.*//g")
-            METHODPARAMS=$(printf "$LINE" | sed -e "s/.*(//g" -e "s/).*//g")
-            if [ $CREATEIMPORTS = true ]; then 
-                PARAMTYPES=$(printf "$METHODPARAMS" | sed -e 's/ [a-zA-Z]\{1,\},/ /g' -e 's/ [a-zA-Z]\{1,\}$/ /')
-                creategeneralimports "$CLSNAME" "$METHODTYPE $PARAMTYPES"
-            fi
-            regexmatch " $LINE" "[ ~]$CLSNAME\(" && continue
-            # Se já estiver implementado, ignorar
-            CPPAMALGOM="$CPPCLSTXTWHOLE\n$CPPGETTERS\n$CPPSETTERS"
-            regexmatch "$CPPAMALGOM" "$CLSNAME::$METHODNAME\(" && continue
-            elemadded "${METHODNAME}"
-            CREATEHMETHOD=false
-            createcppmethod "$CLSNAME"
         fi
+        regexmatch "$LINE" '\*/' && INSIDECOMMENT=false
     done < "$CLSNAME.h"
 
     UPPERCASE=$(printf "$CLSNAME" | tr '[:lower:]' '[:upper:]')

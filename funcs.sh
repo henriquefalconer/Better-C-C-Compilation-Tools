@@ -410,15 +410,18 @@ cppmissing() {
     fi
     PRINTIMPORTS=$CREATEIMPORTS
 
-    # Em Windows, converter para LF
-    if command -v dos2unix &> /dev/null; then
-        dos2unix -q "$1.h"
-        dos2unix -q "$1.cpp"
-    fi
+    [ -f "$CLSNAME.cpp" ] || printf '\n' >> "$CLSNAME.cpp"
+
+    convertcrlftolf() {
+        tr -d '\015' < "$1" > "tmp.$1"
+        mv "tmp.$1" "$1"
+    }
+
+    # Converter CRLF para LF
+    convertcrlftolf "$CLSNAME.h"
+    convertcrlftolf "$CLSNAME.cpp"
 
     printf "\nCriando atributos$([ $CREATEIMPORTS = true ] && printf ", métodos e importações" || printf " e métodos") faltantes em ${LIGHTBLUE}$CLSNAME.h${NOCOLOR} e ${LIGHTBLUE}$CLSNAME.cpp${NOCOLOR}... "
-
-    [ -f "$CLSNAME.cpp" ] || printf '\n' >> "$CLSNAME.cpp"
 
     getlineno() {
         printf "$(grep -n -m 1 "$1" <(printf "$2") | sed 's/\([0-9]*\).*/\1/')"
